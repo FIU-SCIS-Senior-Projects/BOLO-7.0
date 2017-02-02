@@ -76,29 +76,29 @@ block content
                 dd #{bolo.id}
 
                 - for (var i = 0; i < bolo.fields.length; i++)
-                    dt.strong #{category.fields[i]}:
-                    dd #{bolo.fields[i]}
+                    if (bolo.fields[i] != "N/A")
+                        dt.strong #{category.fields[i]}:
+                        dd #{bolo.fields[i]}
 
                 dt.strong Created:
                 dd #{bolo.createdOn}
-
+            
+            if(bolo.info != "")
                 dt.strong Additional Info:
                 if bolo.info.length
                     dd #{bolo.info}
-                else
-                    dd N/A
 
+            if(bolo.videoURL != "")
                 dt.strong Video Link:
                 if bolo.videoURL.length
                     a(href=bolo.videoURL target="_blank")
                         dd #{bolo.videoURL}
-                else
-                    dd N/A
+                        
+            if(bolo.summary != "")
                 dt.strong Summary:
                 if bolo.summary.length
                     dd #{bolo.summary}
-                else
-                    dd N/A
+
     .row
         .col-xs-8.col-xs-offset-2.text-center
             if (bolo.author)

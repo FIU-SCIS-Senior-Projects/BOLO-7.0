@@ -237,7 +237,7 @@ PDFService.prototype.genUserGuide = function(user, doc) {
     if ( user.tier === 4){
 
         // agency management
-        doc.fontSize(15).text("Agencgy Management").moveDown(0.25);
+        doc.fontSize(15).text("Agency Management").moveDown(0.25);
         doc.fontSize(12).text(AGENCY_MANAGMENT_ROOT, {align: 'left'}).moveDown();
 
         // Data Analysis
@@ -426,12 +426,7 @@ PDFService.prototype.genDetailsPdf = function(doc, data) {
                 .moveDown();
         }
 
-        // Display Make only if there is a value in it
-        if(data.bolo.boatManufacturer !== ""){
-            doc.font('Times-Roman')
-                .text("Manufacturer: " + data.bolo.boatManufacturer, 300)
-                .moveDown();
-        }
+  
 
         // Display Model only if there is a value in it
         if(data.bolo['boatModel'] !== ""){
@@ -1029,7 +1024,7 @@ PDFService.prototype.genPreviewPDF = function(doc, data) {
             .moveDown();
     }
 
-    // Display Summery only if there is a value in it
+    // Display Summary only if there is a value in it
     if(data.bolo['summary'] !== ""){
         doc.font('Times-Bold')
             .text("Summary: ", 15)
