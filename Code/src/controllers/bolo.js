@@ -1242,16 +1242,14 @@ exports.postBoloSearch = function (req, res, next) {
                 if (err) next(err);
                 else {
                     if (!agency) {
-                        Bolo.searchAllBolosByCategory(category._id, req.body.field, function (err, listOfBolos) {
+                        Bolo.searchAllBolosByCategory(category !== null ? category._id: null, req.body.field, function (err, listOfBolos) {
                             if (err) next(err);
                             else{
-                                console.log(listOfBolos[0]);
                                 res.render('bolo-search-results', {bolos: listOfBolos});
-                            }
-                                
+                            }         
                         });
-                    } else {
-                        Bolo.searchAllBolosByAgencyAndCategory(agency._id, category._id, req.body.field, function (err, listOfBolos) {
+                    } else {             
+                        Bolo.searchAllBolosByAgencyAndCategory(agency._id, category !== null ? category._id: null, req.body.field, function (err, listOfBolos) {
                             if (err) next(err);
                             else
                                 res.render('bolo-search-results', {bolos: listOfBolos});

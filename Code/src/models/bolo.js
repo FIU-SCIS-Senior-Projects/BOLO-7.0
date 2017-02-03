@@ -144,14 +144,38 @@ module.exports.searchAllBolosByAgencyAndCategory = function (agencyID, categoryI
     console.log('Searching for AgencyID: ' + agencyID + ', categoryID: ' + categoryID + ', fieldsArray: ' + fieldsArray);
     if (!Array.isArray(fieldsArray))
         fieldsArray = [fieldsArray];
-    Bolo.find({agency: agencyID, category: categoryID, fields: {$in: fieldsArray}}).exec(callback);
+        
+    var isFieldsArrayEmpty = 0;    
+    for (var item = 0; item < fieldsArray.length; item++){
+        if(fieldsArray[item] !== '')
+            isFieldsArrayEmpty++;
+    }    
+
+    if(!categoryID)
+        Bolo.find({agency: agencyID}).exec(callback);  
+    else if(!isFieldsArrayEmpty)
+        Bolo.find({agency: agencyID, category: categoryID}).exec(callback);     
+    else
+        Bolo.find({agency: agencyID, category: categoryID, fields: {$in: fieldsArray}}).exec(callback);
 };
 
 module.exports.searchAllBolosByCategory = function (categoryID, fieldsArray, callback) {
     console.log('Searching for categoryID: ' + categoryID + ', fieldsArray: ' + fieldsArray);
     if (!Array.isArray(fieldsArray))
-        fieldsArray = [fieldsArray];
-    Bolo.find({category: categoryID, fields: {$in: fieldsArray}}).exec(callback);
+        fieldsArray = [fieldsArray];   
+
+    var isFieldsArrayEmpty = 0;    
+    for (var item = 0; item < fieldsArray.length; item++){
+        if(fieldsArray[item] !== '')
+            isFieldsArrayEmpty++;  
+    }
+
+    if(!categoryID)
+        Bolo.find({}).exec(callback); 
+    else if (!isFieldsArrayEmpty)
+        Bolo.find({category: categoryID}).exec(callback);
+    else
+        Bolo.find({category: categoryID, fields: {$in: fieldsArray}}).exec(callback);
 };
 
 module.exports.deleteBolo = function (id, callback) {
