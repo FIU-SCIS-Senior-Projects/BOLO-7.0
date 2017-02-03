@@ -1038,7 +1038,7 @@ exports.postEditBolo = function (req, res, next) {
                             bolo.reportedOn = newDate;
                         }
                         bolo.conformationToken = token;
-                        bolo.isConfirmed = false;
+                        bolo.isConfirmed = true;
                         bolo.lastUpdated = Date.now();
 
                         if (req.files['featured']) {
@@ -1219,6 +1219,7 @@ exports.getBoloSearch = function (req, res, next) {
             listOfAgencyNames.push('N/A');
             for (const i in listOfAgencies) {
                 listOfAgencyNames.push(listOfAgencies[i].name);
+                console.log(listOfAgencies[i].name + "  ");
             }
             Category.findAllCategories(function (err, listOfCategories) {
                 if (err) next(err);
@@ -1243,8 +1244,11 @@ exports.postBoloSearch = function (req, res, next) {
                     if (!agency) {
                         Bolo.searchAllBolosByCategory(category._id, req.body.field, function (err, listOfBolos) {
                             if (err) next(err);
-                            else
+                            else{
+                                console.log(listOfBolos[0]);
                                 res.render('bolo-search-results', {bolos: listOfBolos});
+                            }
+                                
                         });
                     } else {
                         Bolo.searchAllBolosByAgencyAndCategory(agency._id, category._id, req.body.field, function (err, listOfBolos) {
