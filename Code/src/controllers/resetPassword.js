@@ -42,19 +42,27 @@ exports.checkPassword = function (req, res) {
 
 exports.newPassword = function (req, res) {
     var user = req.user;
+    
+
 
     var todaysDate = new Date();
     var nintydaysinMins = 129600;
     var newPasswordDate = new Date(todaysDate.getTime() + nintydaysinMins * 60000);
-    //console.log("THis is the new password Date: " + newPasswordDate);
-    if (req.body.password) {
+    console.log("THis is the new password Date: " + newPasswordDate);
+    if (req.body.password || req.body.password === "") {
         console.log("The New Password is: " + req.body.password);
 
         var errors = [];
-        req.checkBody('password', 'Password is not valid').isCorrectPasswordFormat();
+        req.checkBody('password', 'Password format is not valid!').isCorrectPasswordFormat();
         var valErrors = req.validationErrors();
         for (var x in valErrors)
-            errors.push(valErrors[x]);
+            errors.push(valErrors[x]); 
+
+        if (req.body.password !== req.body.confirm){
+            console.log("Password and confirmation must match!!");
+            console.log(req.body.password + " " + req.body.confirm);
+            errors.push("Password must match!!");
+        }    
 
         //If at least one error was found
         if (errors.length) {
