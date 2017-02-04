@@ -61,7 +61,7 @@ var Schema = new mongoose.Schema({
     },
     isConfirmed: {
         type: Boolean,
-        default: true
+        default: false
     },
     conformationToken: {
         type: String,
