@@ -1,0 +1,31 @@
+extends layout
+
+block jumbo
+    .jumbotron
+        .container
+            h3 Archived BOLOs
+            input#input.hidden(value='archived')
+            label.label(for='filter')
+                | Filter BOLOs By:
+            select#filter.selectpicker(title="Filter By" data-width="fit")
+                option(value="allBolos" selected="selected") All Bolos
+                option(value="myAgency") My Agency
+                option(value="myBolos") My Bolos
+
+block content
+    if (userTier === 'ROOT')
+        div.pull-right
+                //TODO Create a purge date range to delete BOLOs
+                //label.control-label(for="purgeRange") Bolos Older Than:
+                    select#purgeRange(name="purgeRange")
+                        option(value='1') One Year
+                        option(value='2') Two Years
+                        option(value='3') All Archived Bolos
+                a#purge.btn.btn-danger(href='/bolo/archive/purge')
+                    | Purge
+
+    #bolo-list.row.text-center
+    .row.text-center
+        nav(aria-label="Page navigation")
+            ul#bolo-paging.pagination
+    script(src="/js/renderPage.js" )
