@@ -1038,7 +1038,7 @@ exports.postEditBolo = function (req, res, next) {
                             bolo.reportedOn = newDate;
                         }
                         bolo.conformationToken = token;
-                        bolo.isConfirmed = true;
+                        bolo.isConfirmed = false;
                         bolo.lastUpdated = Date.now();
 
                         if (req.files['featured']) {
