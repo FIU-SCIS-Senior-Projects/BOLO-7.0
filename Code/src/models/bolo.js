@@ -152,11 +152,11 @@ module.exports.searchAllBolosByAgencyAndCategory = function (agencyID, categoryI
     }    
 
     if(!categoryID)
-        Bolo.find({agency: agencyID}).exec(callback);  
+        Bolo.find({agency: agencyID, isConfirmed: true}).exec(callback);  
     else if(!isFieldsArrayEmpty)
-        Bolo.find({agency: agencyID, category: categoryID}).exec(callback);     
+        Bolo.find({agency: agencyID, category: categoryID, isConfirmed: true}).exec(callback);     
     else
-        Bolo.find({agency: agencyID, category: categoryID, fields: {$in: fieldsArray}}).exec(callback);
+        Bolo.find({agency: agencyID, category: categoryID, fields: {$in: fieldsArray}, isConfirmed: true}).exec(callback);
 };
 
 module.exports.searchAllBolosByCategory = function (categoryID, fieldsArray, callback) {
@@ -171,11 +171,11 @@ module.exports.searchAllBolosByCategory = function (categoryID, fieldsArray, cal
     }
 
     if(!categoryID)
-        Bolo.find({}).exec(callback); 
+        Bolo.find({isConfirmed: true}).exec(callback); 
     else if (!isFieldsArrayEmpty)
-        Bolo.find({category: categoryID}).exec(callback);
+        Bolo.find({category: categoryID, isConfirmed: true}).exec(callback);
     else
-        Bolo.find({category: categoryID, fields: {$in: fieldsArray}}).exec(callback);
+        Bolo.find({category: categoryID, fields: {$in: fieldsArray}, isConfirmed: true}).exec(callback);
 };
 
 module.exports.deleteBolo = function (id, callback) {
