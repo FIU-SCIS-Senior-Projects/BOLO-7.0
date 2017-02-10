@@ -792,122 +792,122 @@ exports.postCreateBolo = function (req, res, next) {
                 if (category == null)  
                     errors.push('Please select a category');
                
-                // If there are errors
-                if (errors.length) {
-                    console.log("Validation errors:" + errors);
+            // If there are errors
+            if (errors.length) {
+                console.log("Validation errors:" + errors);
 
                 //Render back page
                 prevForm.errors = errors;
                 res.render('bolo-create', prevForm);
                
-                }
-                    //If no errors were found
-                else {
-                    const token = crypto.randomBytes(20).toString('hex');
-                    var newBolo = new Bolo({
-                        author: req.user.id,
-                        agency: req.user.agency.id,
-                        reportedOn: newDate,
-                        category: category.id,
-                        videoURL: req.body.videoURL,
-                        info: req.body.info,
-                        summary: req.body.summary,
-                        conformationToken: token,
-                        status: 'ACTIVE',
-                        fields: req.body.field
-                    });
-                    console.log('req.body.field: ' + req.body.field);
-                    newBolo.fields = req.body.field;
-                    for (var i in newBolo.fields) {
-                        if (newBolo.fields[i] === '') {
-                            newBolo.fields[i] = 'N/A';
-                        }
-                    }
-                    var buffer = {
-                        featured: {},
-                        other1: {},
-                        other2: {}
-                    };
-
-                    if (req.files['featured']) {
-                        if (req.body.compressedFeatured) {
-                            console.log('Using compressed featured image');
-                            newBolo.featured = {
-                                data: req.body.compressedFeatured,
-                                contentType: 'image/jpg'
-                            };
-                        } else {
-                            console.log('Using original featured image');
-                            newBolo.featured = {
-                                data: req.files['featured'][0].buffer,
-                                contentType: req.files['featured'][0].mimeType
-                            };
-                        }
-                        buffer.featured.data = req.files['featured'][0].buffer.toString('base64');
-                        buffer.featured.contentType = req.files['featured'][0].mimeType;
-                    }
-                    if (req.files['other1']) {
-                        if (req.body.compressedOther1) {
-                            console.log('Using compressed other1 image');
-                            newBolo.other1 = {
-                                data: req.body.compressedOther1,
-                                contentType: 'image/jpg'
-                            };
-                        } else {
-                            console.log('Using original other1 image');
-                            newBolo.other1 = {
-                                data: req.files['other1'][0].buffer,
-                                contentType: req.files['other1'][0].mimeType
-                            };
-                        }
-                        buffer.other1.data = req.files['other1'][0].buffer.toString('base64');
-                        buffer.other1.contentType = req.files['other1'][0].mimeType;
-                    }
-                    if (req.files['other2']) {
-                        if (req.body.compressedOther2) {
-                            console.log('Using compressed other2 image');
-                            newBolo.other2 = {
-                                data: req.body.compressedOther2,
-                                contentType: 'image/jpg'
-                            };
-                        } else {
-                            console.log('Using original other2 image');
-                            newBolo.other2 = {
-                                data: req.files['other2'][0].buffer,
-                                contentType: req.files['other2'][0].mimeType
-                            };
-                        }
-                        buffer.other2.data = req.files['other2'][0].buffer.toString('base64');
-                        buffer.other2.contentType = req.files['other2'][0].mimeType;
-                    }
-
-                    if (req.body.option === "preview") {
-                        Agency.findAgencyByID(req.user.agency.id, function (err, agency) {
-                            console.log('newBolo' + newBolo);
-                            res.render('bolo-preview', {
-                                bolo: newBolo,
-                                category: category,
-                                agency: agency,
-                                buffer: buffer
-                            });
-                        })
-                    }
-                    else {
-                        newBolo.save(function (err) {
-                            if (err) {
-                                prevForm.errors = getErrorMessage(err);
-                                res.render('bolo-create', prevForm);
-                            } else {
-                                console.log('Sending email using Sendgrid');
-                                sendBoloConfirmationEmail(req.user.email, req.user.firstname, req.user.lastname, token);
-                                req.flash('success_msg', 'BOLO successfully created, Please check your email in order to confirm it.');
-                                res.redirect('/bolo');
-                            }
+            }
+            //If no errors were found
+            else {
+                        const token = crypto.randomBytes(20).toString('hex');
+                        var newBolo = new Bolo({
+                            author: req.user.id,
+                            agency: req.user.agency.id,
+                            reportedOn: newDate,
+                            category: category.id,
+                            videoURL: req.body.videoURL,
+                            info: req.body.info,
+                            summary: req.body.summary,
+                            conformationToken: token,
+                            status: 'ACTIVE',
+                            fields: req.body.field
                         });
+                        console.log('req.body.field: ' + req.body.field);
+                        newBolo.fields = req.body.field;
+                        for (var i in newBolo.fields) {
+                            if (newBolo.fields[i] === '') {
+                                newBolo.fields[i] = 'N/A';
+                            }
+                        }
+                        var buffer = {
+                            featured: {},
+                            other1: {},
+                            other2: {}
+                        };
+
+                        if (req.files['featured']) {
+                            if (req.body.compressedFeatured) {
+                                console.log('Using compressed featured image');
+                                newBolo.featured = {
+                                    data: req.body.compressedFeatured,
+                                    contentType: 'image/jpg'
+                                };
+                            } else {
+                                console.log('Using original featured image');
+                                newBolo.featured = {
+                                    data: req.files['featured'][0].buffer,
+                                    contentType: req.files['featured'][0].mimeType
+                                };
+                            }
+                            buffer.featured.data = req.files['featured'][0].buffer.toString('base64');
+                            buffer.featured.contentType = req.files['featured'][0].mimeType;
+                        }
+                        if (req.files['other1']) {
+                            if (req.body.compressedOther1) {
+                                console.log('Using compressed other1 image');
+                                newBolo.other1 = {
+                                    data: req.body.compressedOther1,
+                                    contentType: 'image/jpg'
+                                };
+                            } else {
+                                console.log('Using original other1 image');
+                                newBolo.other1 = {
+                                    data: req.files['other1'][0].buffer,
+                                    contentType: req.files['other1'][0].mimeType
+                                };
+                            }
+                            buffer.other1.data = req.files['other1'][0].buffer.toString('base64');
+                            buffer.other1.contentType = req.files['other1'][0].mimeType;
+                        }
+                        if (req.files['other2']) {
+                            if (req.body.compressedOther2) {
+                                console.log('Using compressed other2 image');
+                                newBolo.other2 = {
+                                    data: req.body.compressedOther2,
+                                    contentType: 'image/jpg'
+                                };
+                            } else {
+                                console.log('Using original other2 image');
+                                newBolo.other2 = {
+                                    data: req.files['other2'][0].buffer,
+                                    contentType: req.files['other2'][0].mimeType
+                                };
+                            }
+                            buffer.other2.data = req.files['other2'][0].buffer.toString('base64');
+                            buffer.other2.contentType = req.files['other2'][0].mimeType;
+                        }
+
+                        if (req.body.option === "preview") {
+                            Agency.findAgencyByID(req.user.agency.id, function (err, agency) {
+                                console.log('newBolo' + newBolo);
+                                res.render('bolo-preview', {
+                                    bolo: newBolo,
+                                    category: category,
+                                    agency: agency,
+                                    buffer: buffer
+                                });
+                            })
+                        }
+                        else {
+                            newBolo.save(function (err) {
+                                if (err) {
+                                    prevForm.errors = getErrorMessage(err);
+                                    res.render('bolo-create', prevForm);
+                                } else {
+                                    console.log('Sending email using Sendgrid');
+                                    sendBoloConfirmationEmail(req.user.email, req.user.firstname, req.user.lastname, token);
+                                    req.flash('success_msg', 'BOLO successfully created, Please check your email in order to confirm it.');
+                                    res.redirect('/bolo');
+                                }
+                            });
+                        }
                     }
-                }
-             })
-        }
+                })
+            }
     })
 };
 
@@ -1019,7 +1019,7 @@ exports.postEditBolo = function (req, res, next) {
                         var reportedTime = req.body.timeReported.split(':');
                         newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
                             reportedTime[0], reportedTime[1], 0, 0);
-                        if (isNaN(newDate.getTime())) 
+                        if (isNaN(newDate.getTime()))
                             errors.push('Please Enter a Valid Date');
                     }
                     //If there are validation errors
@@ -1045,7 +1045,7 @@ exports.postEditBolo = function (req, res, next) {
                             bolo.reportedOn = newDate;
                         }
                         bolo.conformationToken = token;
-                        bolo.isConfirmed = false; 
+                        bolo.isConfirmed = false;
                         bolo.lastUpdated = Date.now();
 
                         if (req.files['featured']) {
