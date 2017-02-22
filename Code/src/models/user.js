@@ -120,3 +120,13 @@ module.exports.comparePassword = function (passwordToCheck, userHash, callback) 
         callback(null, result);
     });
 };
+
+module.exports.subscribeToAgencies = function (userId, agenciesId, callback) {
+    User.findByIdAndUpdate(userId,
+        {$addToSet: { agencySubscriber: { $each: agenciesId}}}, callback);
+};
+
+
+module.exports.unsubscribeFromAgencies = function (userId, agenciesId, callback) {
+    User.findByIdAndUpdate(userId, {$pull: { agencySubscriber: { $in: agenciesId}}},callback);
+};
