@@ -96,6 +96,17 @@ module.exports.findAgencyByID = function (id, callback) {
     Agency.findById(id, callback);
 };
 
+module.exports.findAgenciesByID = function (ids, callback) {
+    Agency.find({_id : { $in: ids }}, callback);
+};
+
+module.exports.findUnsubscribedAgenciesByID = function (ids, callback) {
+    if(ids.length > 0)
+        Agency.find({_id: { $nin: ids}, name: {$ne: 'NULL'}}, callback);
+    else
+        Agency.find({name: {$ne: 'NULL'}}, callback);
+};
+ 
 module.exports.findAgencyByIDAndUpdate = function (id, newData, callback) {
     Agency.findOneAndUpdate({_id: id}, {$set: {newData}}, {new: false}, callback);
 };
@@ -103,3 +114,4 @@ module.exports.findAgencyByIDAndUpdate = function (id, newData, callback) {
 module.exports.removeAgencyByID = function (agencyID, callback) {
     Agency.remove({_id: agencyID}).exec(callback);
 };
+
