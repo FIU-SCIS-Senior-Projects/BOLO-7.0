@@ -1,7 +1,7 @@
 $(function () {
     // Initialize form validation on the registration form.
     // It has the name attribute "registration"
-    $("form[name='createBoloForm']").validate({
+    $("form[name='createBoloForm'], form[name='editBoloForm']").validate({
         // Specify validation rules
         rules: {
             // The key name on the left side is the name attribute
@@ -38,4 +38,5 @@ $(function () {
             form.submit();
         }
     });
+
 });

@@ -813,6 +813,7 @@ exports.postCreateBolo = function (req, res, next) {
                             info: req.body.info,
                             summary: req.body.summary,
                             conformationToken: token,
+                            boloToDelete : 'N/A',
                             status: 'ACTIVE',
                             fields: req.body.field
                         });
@@ -916,7 +917,6 @@ exports.postCreateBolo = function (req, res, next) {
  */
 exports.loggedOutConfirmBolo = function (req, res, next) {
     if (!req.user) {
-        //yep
         Bolo.findBoloByToken(req.params.token, function (err, boloToConfirm) {
             if (err) next(err);
             else {
@@ -926,13 +926,46 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                 } else if (boloToConfirm.isConfirmed === true) {
                     req.flash('error_msg', 'That Bolo was already confirmed');
                     res.redirect('/login');
+                } else if (boloToConfirm.boloToDelete != 'N/A') { 
+                    //Find original BOLO
+                    Bolo.findBoloByID(boloToConfirm.boloToDelete, function (err, originalBolo) {
+                        if (err) next(err);
+                        else {
+                            if (!originalBolo) {
+                                //Delete new BOLO if original cannot be found
+                                Bolo.deleteBolo(boloToConfirm.id, function (err) {
+                                    if (err) next(err);
+                                    else {
+                                        req.flash('error_msg', 'Bolo to confirm was not found on the database');
+                                        res.redirect('/bolo');
+                                    }
+                                });
+                            } else  {
+                                //Delete original BOLO
+                                Bolo.deleteBolo(boloToConfirm.boloToDelete, function (err) {
+                                    if (err) next(err);
+                                    else {
+                                        boloToConfirm.boloToDelete = 'N/A';
+                                    }
+                                });
+                                boloToConfirm.isConfirmed = true;
+                                boloToConfirm.save(function (err) {
+                                    if (err) next(err);
+                                    else {
+                                        req.flash('success_msg', 'Bolo has been confirmed');
+                                        res.redirect('/bolo');
+                                    }
+                                });
+                            }
+                        }
+                    });
                 } else {
                     boloToConfirm.isConfirmed = true;
                     boloToConfirm.save(function (err) {
                         if (err) next(err);
                         else {
                             req.flash('success_msg', 'Bolo has been confirmed');
-                            res.redirect('/login');
+                            res.redirect('/bolo');
                         }
                     });
                 }
@@ -956,6 +989,39 @@ exports.confirmBolo = function (req, res, next) {
             } else if (boloToConfirm.isConfirmed === true) {
                 req.flash('error_msg', 'That Bolo was already confirmed');
                 res.redirect('/bolo');
+            } else if (boloToConfirm.boloToDelete != 'N/A') { 
+                //Find original BOLO
+                Bolo.findBoloByID(boloToConfirm.boloToDelete, function (err, originalBolo) {
+                    if (err) next(err);
+                    else {
+                        if (!originalBolo) {
+                            //Delete new BOLO if original cannot be found
+                            Bolo.deleteBolo(boloToConfirm.id, function (err) {
+                                if (err) next(err);
+                                else {
+                                    req.flash('error_msg', 'Bolo to confirm was not found on the database');
+                                    res.redirect('/bolo');
+                                }
+                            });
+                        } else  {
+                            //Delete original BOLO
+                            Bolo.deleteBolo(boloToConfirm.boloToDelete, function (err) {
+                                if (err) next(err);
+                                else {
+                                    boloToConfirm.boloToDelete = 'N/A';
+                                }
+                            });
+                            boloToConfirm.isConfirmed = true;
+                            boloToConfirm.save(function (err) {
+                                if (err) next(err);
+                                else {
+                                    req.flash('success_msg', 'Bolo has been confirmed');
+                                    res.redirect('/bolo');
+                                }
+                            });
+                        }
+                    }
+                });
             } else {
                 boloToConfirm.isConfirmed = true;
                 boloToConfirm.save(function (err) {
@@ -982,7 +1048,22 @@ exports.getEditBolo = function (req, res, next) {
                     ((req.user.tier === 'ADMINISTRATOR' || req.user.tier === 'SUPERVISOR') &&
                     req.user.agency.id === bolo.agency.id) ||
                     (req.user.id === bolo.author.id)) {
-                    res.render('bolo-edit', {bolo: bolo});
+                         var d = new Date(bolo.reportedOn); 
+                     
+                         var date = [d.getDate(), d.getMonth() + 1, d.getFullYear()].join('/');
+                         var time = [d.getHours(), (d.getMinutes() < 10) ? d.getMinutes() + "0" : d.getMinutes()].join(':'); 
+
+                         var prevForm = {
+                             dateReported: date,
+                             timeReported: time,
+                             vid: bolo.videoURL,
+                             info: bolo.info,
+                             summary: bolo.summary,
+                             fields : bolo.fields
+                         };
+                                                                                     
+                         res.render('bolo-edit', {bolo: bolo, prevForm : prevForm});
+                        
                 } else {
                     req.flash('error_msg', 'You can not edit this Bolo');
                     res.redirect('/bolo');
@@ -1006,29 +1087,43 @@ exports.postEditBolo = function (req, res, next) {
                     ((req.user.tier === 'ADMINISTRATOR' || req.user.tier === 'SUPERVISOR') &&
                     req.user.agency.id === bolo.agency.id) ||
                     (req.user.id === bolo.author.id)) {
+
                     //Validation of form
                     var errors = [];
                     req.checkBody('category', 'Please select a category').notEmpty();
+                    req.checkBody('dateReported', 'Please enter a date').notEmpty();
+                    req.checkBody('timeReported', 'Please enter a time').notEmpty();
+             
                     var valErrors = req.validationErrors();
                     for (var x in valErrors)
                         errors.push(valErrors[x]);
-                    //Validation of the date object
-                    var newDate;
-                    if (req.body.dateReported && req.body.timeReported) {
-                        var reportedDate = req.body.dateReported.split('/');
-                        var reportedTime = req.body.timeReported.split(':');
-                        newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
-                            reportedTime[0], reportedTime[1], 0, 0);
-                        if (isNaN(newDate.getTime()))
-                            errors.push('Please Enter a Valid Date');
+
+                    //Create a date object using date and time reported
+                    const reportedDate = req.body.dateReported.split('/');
+                    const reportedTime = req.body.timeReported.split(':');
+                    const newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
+                         reportedTime[0], reportedTime[1], 0, 0);
+                    if (isNaN(newDate.getTime())) {
+                         errors.push('Please Enter a Valid Date');
                     }
-                    //If there are validation errors
+
+                    var prevForm = {
+                        dateReported: req.body.dateReported,
+                        timeReported: req.body.timeReported,
+                        vid: req.body.videoURL,
+                        info: req.body.info,
+                        summary: req.body.summary,
+                        fields : req.body.field,
+                    };
+                                                                                                                                    
+                    // If there are errors
                     if (errors.length) {
-                        console.log(errors);
+                        console.log("Validation errors:" + errors);
 
                         //Render back page
-                        bolo.errors = errors;
-                        res.render('bolo-edit', bolo);
+                        prevForm.errors = errors;
+                        res.render('bolo-edit', {bolo: bolo, prevForm : prevForm});
+                        
                     }
                     //If no errors were found
                     else {
@@ -1036,37 +1131,65 @@ exports.postEditBolo = function (req, res, next) {
                         console.log("The new status is: " + req.body.status);
 
                         var token = crypto.randomBytes(20).toString('hex');
-                        if (req.body.videoURL) bolo.videoURL = req.body.videoURL;
-                        if (req.body.info) bolo.info = req.body.info;
-                        if (req.body.summary) bolo.summary = req.body.summary;
-                        if (req.body.status) bolo.status = req.body.status;
-                        if (req.body.field) bolo.fields = req.body.field;
-                        if (req.body.dateReported && req.body.timeReported) {
-                            bolo.reportedOn = newDate;
-                        }
-                        bolo.conformationToken = token;
-                        bolo.isConfirmed = false;
-                        bolo.lastUpdated = Date.now();
+                        var newBolo = new Bolo({
+                            author: bolo.author.id,
+                            agency: bolo.agency.id,
+                            category : bolo.category.id,
+                            createdOn : bolo.createdOn,
+                            conformationToken: token, 
+                            boloToDelete : bolo.id,
+                            isConfirmed : false,
+                            lastUpdated : Date.now(), 
+                            subscribers : bolo.subscribers,
+                            reportedOn: newDate,
+                            videoURL: req.body.videoURL,
+                            info: req.body.info,
+                            summary: req.body.summary,
+                            status: req.body.status,
+                            fields: req.body.field
+                        });
 
+                        //Fill in missing fields
+                        if (!newBolo.videoURL) newBolo.videoURL = "";
+                        if (!newBolo.info) newBolo.info = "";
+                        if (!newBolo.summary) newBolo.summary = "";
+                       
+                        console.log('req.body.field: ' + req.body.field);
+                        newBolo.fields = req.body.field;
+                        for (var i in newBolo.fields) {
+                            if (newBolo.fields[i] === '') {
+                                newBolo.fields[i] = 'N/A';
+                            }
+                        }
+                                             
                         if (req.files['featured']) {
-                            bolo.featured = {
+                            newBolo.featured = {
                                 data: req.files['featured'][0].buffer,
                                 contentType: req.files['featured'][0].mimeType
                             };
+                        }  else {
+                            newBolo.featured = bolo.featured; 
                         }
+
                         if (req.files['other1']) {
-                            bolo.other1 = {
+                            newBolo.other1 = {
                                 data: req.files['other1'][0].buffer,
                                 contentType: req.files['other1'][0].mimeType
                             };
+                        } else {
+                            newBolo.other1 = bolo.other1;
                         }
+
                         if (req.files['other2']) {
-                            bolo.other2 = {
+                            newBolo.other2 = {
                                 data: req.files['other2'][0].buffer,
                                 contentType: req.files['other2'][0].mimeType
                             };
-                        }
-                        bolo.save(function (err) {
+                        } else {
+                            newBolo.other2 = bolo.other2;
+                        } 
+
+                        newBolo.save(function (err) {
                             if (err) {
                                 console.log('Bolo could not be updated...');
                                 console.log(getErrorMessage(err)[0].msg);

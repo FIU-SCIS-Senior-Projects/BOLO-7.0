@@ -67,6 +67,10 @@ var Schema = new mongoose.Schema({
         type: String,
         required: true
     },
+    boloToDelete: {
+        type: String,
+        required: true
+    },
     isArchived: {
         type: Boolean,
         default: false

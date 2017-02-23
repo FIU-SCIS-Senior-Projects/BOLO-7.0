@@ -24,9 +24,9 @@ block content
 
             .row
                 .col-sm-6
-                    +input_text( "dateReported", "Date Reported", "DD/MM/YYYY", true )
+                    +input_text( "dateReported", "Date Reported", "DD/MM/YYYY", false, dateReported1 )
                 .col-sm-6
-                    +input_text( "timeReported", "Time Reported", "HH:MM", true )
+                    +input_text( "timeReported", "Time Reported", "HH:MM", false, timeReported1 )
             div#category
                 -
                     var categoryNames = ['Select a Category']
