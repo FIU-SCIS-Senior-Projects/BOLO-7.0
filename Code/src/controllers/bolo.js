@@ -757,7 +757,6 @@ exports.postCreateBolo = function (req, res, next) {
             req.flash('error_msg', 'Could not find categories');
             res.redirect('/bolo/create');
         } else {
-
             //Holds previously entered form data
             var prevForm = {
                 dateReported1: req.body.dateReported,
@@ -773,7 +772,6 @@ exports.postCreateBolo = function (req, res, next) {
             req.checkBody('category', 'Please select a category').notEmpty();
             req.checkBody('dateReported', 'Please enter a date').notEmpty();
             req.checkBody('timeReported', 'Please enter a time').notEmpty();
-             
             var valErrors = req.validationErrors();
             for (var x in valErrors)
                 errors.push(valErrors[x]);
@@ -782,16 +780,8 @@ exports.postCreateBolo = function (req, res, next) {
             const reportedTime = req.body.timeReported.split(':');
             const newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
                 reportedTime[0], reportedTime[1], 0, 0);
-            if (isNaN(newDate.getTime())) {
+            if (isNaN(newDate.getTime()))
                 errors.push('Please Enter a Valid Date');
-            }
-
-            Category.findCategoryByName(req.body.category, function (err, category) {
-                if (err) next(err);
-                
-                if (category == null)  
-                    errors.push('Please select a category');
-               
             // If there are errors
             if (errors.length) {
                 console.log("Validation errors:" + errors);
@@ -799,10 +789,12 @@ exports.postCreateBolo = function (req, res, next) {
                 //Render back page
                 prevForm.errors = errors;
                 res.render('bolo-create', prevForm);
-               
             }
             //If no errors were found
             else {
+                Category.findCategoryByName(req.body.category, function (err, category) {
+                    if (err) next(err);
+                    else {
                         const token = crypto.randomBytes(20).toString('hex');
                         var newBolo = new Bolo({
                             author: req.user.id,
@@ -908,6 +900,7 @@ exports.postCreateBolo = function (req, res, next) {
                     }
                 })
             }
+        }
     })
 };
 
@@ -1094,8 +1087,56 @@ exports.postEditBolo = function (req, res, next) {
 /**
  * List archived bolos
  */
-exports.renderArchivedBolos = function (req, res) {
+exports.renderArchivedBolos = function (req, res, next) {
+
+    console.log(req.query);
+    const limit = config.const.BOLOS_PER_QUERY;
+    const filter = req.query.filter || 'allBolos';
+    const isArchived = req.query.archived ;
+    const agency = req.query.agency || '';
+    
+    switch (filter) {
+
+        case 'allBolos':
+            Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+        case 'myAgency':
+            Bolo.findBolosByAgencyID(req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+        case 'myBolos':
+            Bolo.findBolosByAuthor(req.user.id, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+        default:
+           Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    console.log('Error! default case was called');
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+    
+    }
+    console.log(filter+ 'thissssssssssss');
+           
     res.render('bolo-archive');
+   
+ 
 };
 
 /**
