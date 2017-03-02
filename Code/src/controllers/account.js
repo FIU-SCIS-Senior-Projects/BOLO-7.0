@@ -4,6 +4,7 @@
 
 var User = require("../models/user.js");
 var Agency = require("../models/agency.js");
+var Bolo = require("../models/bolo.js");
 
 /**
  * Responds with a the account home page.
@@ -52,7 +53,34 @@ exports.postUnsubscribeNotifications = function ( req, res, next ) {
             if (err) 
                 next(err)
             else {
-                res.redirect('/account/notifications');
+                //for each agency find bolos
+                var allBolos = [];
+                var i = 0;
+                req.body.agencies.forEach(function(entry){
+                    Bolo.findAllBolosByAgencyID(entry, function(err, buf){
+                        console.log(i);                    
+                        if(err)
+                            next(err);
+                        else{
+                            allBolos = allBolos.concat(buf);
+                        }
+                        if (i == req.body.agencies.length - 1){
+                            //subscribe to each bolo
+                            allBolos.forEach(function(bolo){
+                                console.log(bolo + "\n\n\n");
+                                Bolo.unsubscribeFromBOLO(bolo._id, req.user.email, function (err,temp) {
+                                    if (err) {
+                                        console.log("Error subscribing bolo...\n" + err);
+                                    } else {
+                                        console.log(bolo._id);
+                                    }
+                                });  
+                            });
+                            res.redirect('/account/notifications');
+                        } 
+                        i++;
+                    }); 
+                });                       
             }    
         }); 
     }
@@ -66,19 +94,53 @@ exports.postUnsubscribeNotifications = function ( req, res, next ) {
 exports.postSubscribeNotifications = function ( req, res, next ) {
     console.log(req.user._id);
     console.log(req.body.agencies);
-    Agency.findAgenciesByID(req.body.agencies , function (err, agencies) {
-        if (err) 
-            next(err);
-        else {
-            User.subscribeToAgencies(req.user._id, agencies, function (err, user){
-                if (err) 
-                    next(err)
-                else {
-                    res.redirect('/account/notifications/subscribe');
-                }    
-            });   
-        }
-    });
+    if (typeof req.body.agencies === 'undefined') 
+        res.redirect('/account/notifications/subscribe');
+    else {
+        Agency.findAgenciesByID(req.body.agencies , function (err, agencies) {
+            if (err) 
+                next(err);
+            else {
+                User.subscribeToAgencies(req.user._id, agencies, function (err, user){
+                    if (err) 
+                        next(err)
+                    else {
+                        //for each agency find bolos
+                        var allBolos = [];
+                        var i = 0;
+                        req.body.agencies.forEach(function(entry){
+                            Bolo.findAllBolosByAgencyID(entry, function(err, buf){
+                                console.log(i);
+                                
+                                if(err)
+                                    next(err);
+                                else{
+                                    allBolos = allBolos.concat(buf);
+                                }
+                                if (i == req.body.agencies.length - 1){
+                                    //subscribe to each bolo
+                                    allBolos.forEach(function(bolo){
+                                        console.log(bolo + "\n\n\n");
+                                        Bolo.subscribeToBOLO(bolo._id, req.user.email, function (err,temp) {
+                                            if (err) {
+                                                console.log("Error subscribing bolo...\n" + err);
+                                            } else {
+                                                console.log(bolo._id);
+                                            }
+                                        });  
+                                    });
+                                    res.redirect('/account/notifications/subscribe');
+                                } 
+                                i++;
+                            }); 
+                        });
+                        
+                    }    
+                });   
+            }
+        });
+     }
+
 };
 
 
