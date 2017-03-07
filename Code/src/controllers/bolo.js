@@ -1132,7 +1132,7 @@ exports.renderArchivedBolos = function (req, res, next) {
             break;
     
     }
-    console.log(filter+ 'thissssssssssss');
+   
            
     res.render('bolo-archive');
    
