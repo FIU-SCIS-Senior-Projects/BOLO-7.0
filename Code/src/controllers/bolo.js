@@ -13,6 +13,7 @@ var User = require('../models/user');
 
 var emailService = require('../services/email-service');
 var PDFDocument = require('pdfkit');
+var pug = require('pug');
 
 /**
  * Error handling for MongoDB
@@ -47,7 +48,7 @@ function getErrorMessage(err) {
  * @param template
  * @param creatorEmail
  */
-function sendBoloNotificationEmail(bolo, template, creatorEmail) {
+function sendBoloNotificationEmail(bolo, template) {
     console.log("THIS THE BOLO WE RECEIVED: " + bolo);
     Bolo.findBoloByID(bolo.id, function (err, boloToSend) {
         if (err) throw err;
@@ -80,17 +81,25 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
         }
 
         //Write BOLO Images based on how many images exist, to the PDF
-
+        var onePhoto, twoPhotos, threePhotos;
+        
+        //NO PICTURES
+        if ((bolo.featured.data == undefined) && (bolo.other1.data == undefined) && (bolo.other2.data == undefined)) {
+            var noPic = "public/img/nopic.png";
+            doc.image(noPic, 170, 135, {
+                width: 290, height: 230, align: 'center'
+            }).moveDown(5);
+            onePhoto = true;
+        }
         //Only Featured is present
-        if ((bolo.other1.data == undefined) && (bolo.other2.data == undefined)) {
+        else if ((bolo.other1.data == undefined) && (bolo.other2.data == undefined)) {
             doc.image(bolo.featured.data, 170, 135, {
                 width: 290, height: 230, align: 'center'
             }).moveDown(5);
-            var onePhoto = true;
+            onePhoto = true;
         }
         // Only Featured and Other1 are present
-        var twoPhotos;
-        if ((bolo.other1.data != undefined) && (bolo.other2.data == undefined)) {
+        else if ((bolo.other1.data != undefined) && (bolo.other2.data == undefined)) {
             doc.image(bolo.featured.data, 320, 135, {
                 width: 270, height: 210, align: 'center'
             }).moveDown(5);
@@ -101,7 +110,7 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
             twoPhotos = true;
         }
         // Only Featured and Other2 are present
-        if ((bolo.other2.data != undefined) && (bolo.other1.data == undefined)) {
+        else if ((bolo.other2.data != undefined) && (bolo.other1.data == undefined)) {
             doc.image(bolo.featured.data, 30, 135, {
                 width: 270, height: 210, align: 'center'
             }).moveDown(5);
@@ -112,7 +121,7 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
             twoPhotos = true;
         }
         // All Images are present
-        if ((bolo.other1.data != undefined) && (bolo.other2.data != undefined)) {
+        else if ((bolo.other1.data != undefined) && (bolo.other2.data != undefined)) {
             doc.image(bolo.featured.data, 228, 135, {
                 width: 170, height: 110, align: 'center'
             }).moveDown(5);
@@ -124,7 +133,7 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
             doc.image(bolo.other2.data, 415, 135, {
                 width: 170, height: 110, align: 'right'
             }).moveDown(5);
-            var threePhotos = true;
+            threePhotos = true;
         }
 
         //--------------TEXT PORTION-----------------------
@@ -136,69 +145,74 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
         doc.text("UNCLASSIFIED// FOR OFFICIAL USE ONLY// LAW ENFORCEMENT SENSITIVE", 85, 15, {align: 'center'})
             .moveDown(0.25);
         doc.fillColor('black');
-        doc.text(agency.name + " Police Department", {align: 'center'})
+        doc.text(boloToSend.agency.name + " Police Department", {align: 'center'})
             .moveDown(0.25);
-        doc.text(agency.address, {align: 'center'})
+        doc.text(boloToSend.agency.address, {align: 'center'})
             .moveDown(0.25);
-        doc.text(agency.city + ", " + agency.state + ", " + agency.zipcode, {align: 'center'})
+        doc.text(boloToSend.agency.city + ", " + boloToSend.agency.state + ", " + boloToSend.agency.zipcode, {align: 'center'})
             .moveDown(0.25);
-        doc.text(agency.phone, {align: 'center'})
+        doc.text(boloToSend.agency.phone, {align: 'center'})
             .moveDown(0.25);
         doc.fontSize(20);
         doc.fillColor('red');
 
         //Write Category and BOLO status to the PDF Document
         doc.fontSize(23);
-        if (bolo.status !== 'ACTIVE') {
-            if (onePhoto) {
-                doc.fillColor('black');
-                doc.text(bolo.category.name, 85, 100, {align: 'center'}); //original 100, 140
-                doc.fontSize(80);
-                doc.fillColor('red');
-                doc.text(bolo.status, 110, 210, {align: 'center'})
-                    .moveDown();
-            }
-            if (twoPhotos) {
-                doc.fillColor('black');
-                doc.text(bolo.category.name, 85, 100, {align: 'center'}); //original 100, 140
-                doc.fontSize(80);
-                doc.fillColor('red');
-                doc.text(bolo.status, 120, 210, {align: 'center'})
-                    .moveDown();
-            }
-            if (threePhotos) {
-                doc.fillColor('black');
-                doc.text(bolo.category.name, 85, 100, {align: 'center'}); //original 100, 140
-                doc.fontSize(80);
-                doc.fillColor('red');
-                doc.text(bolo.status, 120, 150, {align: 'center'})
-                    .moveDown();
-            }
-        }
-        else {
-            if (onePhoto) {
-                doc.fillColor('red');
-                doc.text(bolo.category.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
-                    .moveDown(11);
-            }
-            if (twoPhotos) {
-                doc.fillColor('red');
-                doc.text(bolo.category.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
-                    .moveDown(5);
-            }
+        Category.findCategoryByID(bolo.category, function(err, boloCategory){
+            if (bolo.status !== 'ACTIVE') {
+                if (onePhoto) {
+                    doc.fillColor('black');
+                    doc.text(boloCategory.name, 85, 100, {align: 'center'}); //original 100, 140
+                    doc.fontSize(80);
+                    doc.fillColor('red');
+                    doc.text(bolo.status, 110, 210, {align: 'center'})
+                        .moveDown();
+                }
+                if (twoPhotos) {
+                    doc.fillColor('black');
+                    doc.text(boloCategory.name, 85, 100, {align: 'center'}); //original 100, 140
+                    doc.fontSize(80);
+                    doc.fillColor('red');
+                    doc.text(bolo.status, 120, 210, {align: 'center'})
+                        .moveDown();
+                }
+                if (threePhotos) {
+                    doc.fillColor('black');
+                    doc.text(boloCategory.name, 85, 100, {align: 'center'}); //original 100, 140
+                    doc.fontSize(80);
+                    doc.fillColor('red');
+                    doc.text(bolo.status, 120, 150, {align: 'center'})
+                        .moveDown();
+                }
 
-            if (threePhotos) {
-                doc.fillColor('red');
-                doc.text(bolo.category.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
-                    .moveDown();
+                doc.end();
             }
+            else {
+                if (onePhoto) {
+                    doc.fillColor('red');
+                    doc.text(boloCategory.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
+                        .moveDown(11);
+                }
+                if (twoPhotos) {
+                    doc.fillColor('red');
+                    doc.text(boloCategory.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
+                        .moveDown(5);
+                }
 
-            doc.text("A BOLO has been issued! Details have been purposely hidden for security.", {align: 'center'})
-                .moveDown(0.25);
-            doc.text("Pleaes login to the BOLO database to view the full details of this BOLO.", {align: 'center'})
-                .moveDown(0.25);
-            doc.end();
-        }
+                if (threePhotos) {
+                    doc.fillColor('red');
+                    doc.text(boloCategory.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
+                        .moveDown();
+                }
+
+                doc.text("A BOLO has been issued! Details have been purposely hidden for security.", {align: 'center'})
+                    .moveDown(0.25);
+                doc.text("Please login to the BOLO database to view the full details of this BOLO.", {align: 'center'})
+                    .moveDown(0.25);
+                doc.end();
+            }
+        });
+        
 
 
         User.findAllUsers(function (err, users) {
@@ -210,31 +224,67 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
                     'bolo': bolo,
                     'app_url': config.appURL
                 };
-
+          
                 // todo check if this is async
-                var html = jade.renderFile(tmp, tdata);
+                var html = pug.renderFile(tmp, tdata);
+                
+                var emails = [];
+                
+
+                if (template === 'update-bolo-notification'){ 
+                    emails = boloToSend.subscribers;
+                }
+
+                //Find all users subscribed to agency and subscribes them to the bolo 
+                if (template === 'new-bolo-notification'){                 
+                    users.forEach(function(entry){
+                         console.log(entry.agencySubscriber);
+                        if(entry.agencySubscriber.indexOf(boloToSend.agency._id.toString()) >= 0){
+                            emails.push(entry.email);
+                            Bolo.subscribeToBOLO(boloToSend._id, entry.email, function (err) {
+                                if (err) {
+                                    console.log("Error subscribing bolo...\n" + err);
+                                } else {
+                                    console.log(entry.username);
+                                }
+                            });    
+                        }
+                            
+                    });
+                }
+
 
                 console.log("SENDING EMAIL SUCCESSFULLY");
-                emailService.send({
-                    'to': creatorEmail,
-                    'bbc': 'bzamo007@fiu.edu',
-                    'from': config.email.from,
-                    'fromName': config.email.fromName,
-                    'subject': 'BOLO Alert: ' + boloToSend.category.name,
-                    'html': html,
-                    'files': [{
-                        filename: tdata.bolo.id + '.pdf', // required only if file.content is used.
-                        contentType: 'application/pdf', // optional
-                        content: doc
-                    }]
-                })
-                    .catch(function (error) {
-                        console.error(
-                            'Unknown error occurred while sending notifications to users' +
-                            'subscribed to agency id %s for BOLO %s\n %s',
-                            bolo.agency, bolo.id, error.message
-                        );
-                    })
+                console.log(emails);
+                User.findUserByID(boloToSend.author, function(err, creator){
+                    console.log(emails);
+                    if(err) 
+                        console.log('Error while finding Bolo author.... \n' + err);
+                    else{                        
+                        emailService.send({
+                            'to': creator.email,
+                            'bcc': emails,
+                            'from': config.email.from,
+                            'fromName': config.email.fromName,
+                            'subject': 'BOLO Alert: ' + boloToSend.category.name,
+                            'html': html,
+                            'files': [{
+                                content: doc,
+                                filename: tdata.bolo.id + '.pdf', // required only if file.content is used.
+                                contentType: 'application/pdf' // optional
+                            }]
+                        })
+                        .catch(function (error) {
+                            console.error(
+                                'Unknown error occurred while sending notifications to users' +
+                                'subscribed to agency id %s for BOLO %s\n %s',
+                                bolo.agency, bolo.id, error.message
+                            );
+                            console.error(error);
+                        });    
+                    }
+                });
+
             }
         })
     })
@@ -249,11 +299,9 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
 /*
  function sendBoloToDataSubscriber(bolo, template) {
  var someData = {};
-
  console.log('in email function');
  boloService.getAttachment(bolo.id, 'featured').then(function (attDTO) {
  someData.featured = attDTO.data;
-
  return dataSubscriberService.getDataSubscribers('all_active')
  .then(function (dataSubscribers) {
  // filters out Data Subscribers and pushes their emails into array
@@ -261,13 +309,11 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
  console.log(dataSubscriber.email);
  return dataSubscriber.email;
  });
-
  var tmp = config.email.template_path + '/' + template + '.jade';
  var tdata = {
  'bolo': bolo,
  'app_url': config.appURL
  };
-
  var html = jade.renderFile(tmp, tdata);
  console.log("SENDING EMAIL TO SUBSCRIBERS SUCCESSFULLY");
  return emailService.send({
@@ -282,7 +328,6 @@ function sendBoloNotificationEmail(bolo, template, creatorEmail) {
  content: someData.featured
  }]
  });
-
  })
  .catch(function (error) {
  console.error('Error occurred while sending notifications to subscriber: ' + dataSubscriber);
@@ -952,6 +997,7 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                                 boloToConfirm.save(function (err) {
                                     if (err) next(err);
                                     else {
+                                        sendBoloNotificationEmail(boloToConfirm,'update-bolo-notification');
                                         req.flash('success_msg', 'Bolo has been confirmed');
                                         res.redirect('/bolo');
                                     }
@@ -964,7 +1010,8 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                     boloToConfirm.save(function (err) {
                         if (err) next(err);
                         else {
-                            req.flash('success_msg', 'Bolo has been confirmed');
+                            sendBoloNotificationEmail(boloToConfirm,'new-bolo-notification');
+                            req.flash('success_msg', 'Bolo has been confirmed'); 
                             res.redirect('/bolo');
                         }
                     });
@@ -1015,7 +1062,8 @@ exports.confirmBolo = function (req, res, next) {
                             boloToConfirm.save(function (err) {
                                 if (err) next(err);
                                 else {
-                                    req.flash('success_msg', 'Bolo has been confirmed');
+                                    sendBoloNotificationEmail(boloToConfirm,'update-bolo-notification');
+                                    req.flash('success_msg', 'Bolo has been confirmed');                            
                                     res.redirect('/bolo');
                                 }
                             });
@@ -1027,6 +1075,7 @@ exports.confirmBolo = function (req, res, next) {
                 boloToConfirm.save(function (err) {
                     if (err) next(err);
                     else {
+                        sendBoloNotificationEmail(boloToConfirm,'new-bolo-notification');
                         req.flash('success_msg', 'Bolo has been confirmed');
                         res.redirect('/bolo');
                     }
@@ -1035,6 +1084,8 @@ exports.confirmBolo = function (req, res, next) {
         }
     });
 };
+
+
 
 /**
  * Render the bolo edit form
@@ -1390,3 +1441,4 @@ exports.postBoloSearch = function (req, res, next) {
         }
     });
 };
+
