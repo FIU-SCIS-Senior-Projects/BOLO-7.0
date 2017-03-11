@@ -19,10 +19,10 @@ block admin-content
                 label.control-label( for=level ) Select the Level(s) of Access.
                 br 
                 select.form-control.selectpicker( name='level[]' title="" multiple)
-                   +option( "OFFICER", OFFICER )
-                   +option( "SUPERVISOR", SUPERVISOR )
-                   +option( "ADMINISTRATOR", ADMINISTRATOR )
                    +option( "ROOT", ROOT )
+                   +option( "ADMINISTRATOR", ADMINISTRATOR )
+                   +option( "SUPERVISOR", SUPERVISOR )
+                   +option( "OFFICER", OFFICER )
             .form-group
                 label.control-label( for=title ) Enter a Name for the Section Heading.
                 input.form-control(name="title"  type="text" value=title1)

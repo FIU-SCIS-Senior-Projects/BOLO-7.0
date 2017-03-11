@@ -14,26 +14,26 @@ block admin-content
 
         div(style='display:inline-block')
             select#filter.selectpicker(data-width="fit" style='display:inline-block' onchange='location = this.value;')
-      
-                if (user == "officer")
-                    option(value="/admin/edit/userGuide/preview/officer" selected="selected") Officer
+                if (user == "root")
+                    option(value="/admin/edit/userGuide/preview/root" selected="selected") Root
                 else 
-                    option(value="/admin/edit/userGuide/preview/officer") Officer
-
-                if (user == "supervisor")
-                    option(value="/admin/edit/userGuide/preview/supervisor" selected="selected") Supervisor
-                else 
-                    option(value="/admin/edit/userGuide/preview/supervisor") Supervisor
+                    option(value="/admin/edit/userGuide/preview/root") Root
 
                 if (user == "administrator")
                     option(value="/admin/edit/userGuide/preview/administrator" selected="selected") Administrator
                 else 
                     option(value="/admin/edit/userGuide/preview/administrator") Administrator
 
-                if (user == "root")
-                    option(value="/admin/edit/userGuide/preview/root" selected="selected") Root
+                if (user == "supervisor")
+                    option(value="/admin/edit/userGuide/preview/supervisor" selected="selected") Supervisor
                 else 
-                    option(value="/admin/edit/userGuide/preview/root") Root
+                    option(value="/admin/edit/userGuide/preview/supervisor") Supervisor
+
+                if (user == "officer")
+                    option(value="/admin/edit/userGuide/preview/officer" selected="selected") Officer
+                else 
+                    option(value="/admin/edit/userGuide/preview/officer") Officer
+
                 
     br
     br
