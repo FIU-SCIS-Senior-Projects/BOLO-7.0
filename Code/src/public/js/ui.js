@@ -51,6 +51,10 @@ jQuery(function(){
     $("#address[type=text]").keyup(function(){
         $(this).val( $(this).val().toUpperCase() );
     });
+    //Transform characters to uppercase
+    $("#domain[type=text]").keyup(function () {
+        $(this).val($(this).val().toLowerCase());
+    }); 
     //Validate numbers in format 99999
     $("#zipCode").mask("99999",{placeholder:""});
     //Validate numbers in format 99-99
