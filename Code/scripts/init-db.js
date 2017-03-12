@@ -60,46 +60,46 @@ var generalCategory = new Category({
         'Race', 'Sex', 'Height', 'Weight', 'Hair Color', 'Tattoos']
 });
 
-//nullAgency.save(function (err, agency) {
-//    if (err) {
-//        console.log('Null Agency could not be saved:' + err);
-//        process.exit(p++);
-//    } else {
-//        console.log('Null Agency has been registered: ' + agency);
-//        rootUser.agency = agency._id;
-//        User.createUser(rootUser, function (err, user) {
-//            if (err) {
-//                console.log('root user could not be saved: ' + err);
-//                process.exit(p++);
-//            } else {
-//                console.log('root user has been registered: ' + user);
-//                autoCategory.save(function (err) {
-//                    if (err) {
-//                        console.log('Error saving categories: ' + err);
-//                        process.exit(p++);
-//                    } else {
-//                        boatCategory.save(function (err) {
-//                            if (err) {
-//                                console.log('Error saving categories: ' + err);
-//                                process.exit(p++);
-//                            } else {
-//                                generalCategory.save(function (err) {
-//                                    if (err) {
-//                                        console.log('Error saving categories: ' + err);
-//                                        process.exit(p++);
-//                                    } else {
-//                                        console.log('3 Categories have been registered: ' + user);
-//                                        console.log('The database has been initialized');
-//                                    }
-//                                })
-//                            }
-//                        })
-//                    }
-//                });
-//            }
-//        })
-//    }
-//});
+nullAgency.save(function (err, agency) {
+    if (err) {
+        console.log('Null Agency could not be saved:' + err);
+        process.exit(p++);
+    } else {
+        console.log('Null Agency has been registered: ' + agency);
+        rootUser.agency = agency._id;
+        User.createUser(rootUser, function (err, user) {
+            if (err) {
+                console.log('root user could not be saved: ' + err);
+                process.exit(p++);
+            } else {
+                console.log('root user has been registered: ' + user);
+                autoCategory.save(function (err) {
+                    if (err) {
+                        console.log('Error saving categories: ' + err);
+                        process.exit(p++);
+                    } else {
+                        boatCategory.save(function (err) {
+                            if (err) {
+                                console.log('Error saving categories: ' + err);
+                                process.exit(p++);
+                            } else {
+                                generalCategory.save(function (err) {
+                                    if (err) {
+                                        console.log('Error saving categories: ' + err);
+                                        process.exit(p++);
+                                    } else {
+                                        console.log('3 Categories have been registered: ' + user);
+                                        console.log('The database has been initialized');
+                                    }
+                                })
+                            }
+                        })
+                    }
+                });
+            }
+        })
+    }
+});
 
 
 //User Guide
