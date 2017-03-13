@@ -3,6 +3,7 @@ var crypto = require('crypto');
 var bcrypt = require('bcrypt-nodejs');
 var emailService = require('../services/email-service');
 var config = require('../config');
+var util = require('util');
 
 exports.checkPassword = function (req, res) {
     if (req.isAuthenticated()) {
@@ -84,6 +85,7 @@ exports.newPassword = function (req, res) {
                                     req.flash('Password could not be Updated. Please contact the administrator.');
                                     res.redirect('/login');
                                 } else {
+                                    sendPasswordChangedEmail(user);
                                     console.log("The user's Password Expires on: " + newPasswordDate);
                                     req.flash('success_msg', 'Password Has Been Updated for ' + user.username);
                                     res.redirect('/login');
@@ -99,6 +101,7 @@ exports.newPassword = function (req, res) {
                                 req.flash('error_msg', getErrorMessage(err)[0].msg);
                                 res.redirect('/password/renderResetPass');
                             } else {
+                                sendPasswordChangedEmail(user);
                                 console.log("The user's Password Expires on: " + newPasswordDate);
                                 req.flash('success_msg', 'Password Has Been Updated for ' + user.username);
                                 res.redirect('/bolo');
@@ -161,13 +164,13 @@ function sendPasswordChangedEmail(user) {
         'your account password has just been changed. Please contact your ' +
         'agency administrator if you did not authorize this.\n\n' +
         '-- BOLO Flier Creator Team',
-        user.fname
+        user.firstname
     );
-    emailService.send({
+    return emailService.send({
         'to': user.email,
         'from': config.email.from,
         'fromName': config.email.fromName,
-        'subject': 'BOLO Flier Creator - Account Update',
+        'subject': 'Password Has Been Reset For ' + user.firstname + ' ' + user.lastname,
         'text': message
     });
 }

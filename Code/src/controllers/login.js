@@ -134,12 +134,20 @@ exports.LogOut = function (req, res) {
 };
 
 exports.renderForgotPasswordPage = function (req, res) {
-    res.render('passwordForgotten');
+    fs.readFile(__dirname + '/../public/Login.md', function (err, data) {
+        if (err) {
+            console.log('Login.md could not be read...\n' + err.stack);
+            res.render('passwordForgotten', { md: md, text: 'Welcome' });
+        } else {
+            console.log('Login.md is being read');
+            res.render('passwordForgotten', { md: md, text: data.toString() });
+        }
+    });
 };
 
 
 exports.postForgotPassword = function (req, res) {
-    
+
     var nintydaysinMins = 129600;
     var todaysDate = new Date();
     var expiredLinkDate = new Date(todaysDate.getTime() + nintydaysinMins * 60000);
@@ -164,7 +172,12 @@ exports.postForgotPassword = function (req, res) {
     //If at least one error was found
     if (missingFields.length) {
         prevForm.errors = missingFields;
-        res.render('passwordForgotten', prevForm);
+        fs.readFile(__dirname + '/../public/Login.md', function (err, data) {
+            prevForm.md = md;
+            if (err) prevForm.text = 'Welcome'; 
+            else prevForm.text = data.toString();    
+            res.render('passwordForgotten', prevForm);
+        });
     } else {
 
         User.findUserByEmail(req.body.email, function (err, user) {
@@ -193,8 +206,12 @@ exports.postForgotPassword = function (req, res) {
                 //If at least one error was found
                 if (formErrors.length) {
                     prevForm.errors = formErrors;
-                    res.render('passwordForgotten', prevForm);
-
+                    fs.readFile(__dirname + '/../public/Login.md', function (err, data) {
+                        prevForm.md = md;
+                        if (err) prevForm.text = 'Welcome';
+                        else prevForm.text = data.toString();
+                        res.render('passwordForgotten', prevForm);
+                    });
                 } else {
                     var token = crypto.randomBytes(20).toString('hex');
                     user.resetPasswordExpires = expiredLinkDate;
