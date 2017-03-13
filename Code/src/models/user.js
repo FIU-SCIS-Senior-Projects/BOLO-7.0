@@ -27,6 +27,14 @@ var Schema = new mongoose.Schema({
         type: String,
         required: true
     },
+    resetPasswordToken: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: Date.now
+    },
     tier: {
         type: String,
         enum: ['OFFICER', 'SUPERVISOR', 'ADMINISTRATOR', 'ROOT'],
@@ -94,8 +102,16 @@ module.exports.findAllUsers = function (callback) {
     User.find({}).populate('agency').exec(callback);
 };
 
+module.exports.findUserByToken = function (token, callback) {
+    User.findOne({resetPasswordToken: token }).populate('agency').exec(callback);
+};
+
 module.exports.findUserByUsername = function (username, callback) {
     User.findOne({username: username.toLowerCase()}).populate('agency').exec(callback);
+};
+
+module.exports.findUserByEmail = function (email, callback) {
+    User.findOne({ email: email.toLowerCase() }).populate('agency').exec(callback);
 };
 
 module.exports.findUserByID = function (id, callback) {

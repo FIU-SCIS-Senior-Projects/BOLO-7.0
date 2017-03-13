@@ -96,6 +96,7 @@ exports.saveUserGuideTitle = function (req, res, next) {
         fs.writeFile('./public/UserGuide/UserGuideTitle.md', title, function (err) {
             if (err) {
                 req.flash('error_msg', 'User Guide title could not be updated');
+                res.redirect('/admin/edit/userGuide/');
             } else {
                 updateFn.updateUserGuide(true, true, true, true);
                 req.flash('success_msg', 'User Guide Title Successfully Updated!');

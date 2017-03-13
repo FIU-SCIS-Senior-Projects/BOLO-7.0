@@ -108,7 +108,6 @@ passport.use(new LocalStrategy(function (username, password, done) {
                 return done(null, false, {message: 'Password is incorrect'});
             }
             //If all checks pass, authorize user for the current session
-            console.log("Test");
             return done(null, user);
         });
     })
@@ -136,4 +135,131 @@ exports.LogOut = function (req, res) {
 
 exports.renderForgotPasswordPage = function (req, res) {
     res.render('passwordForgotten');
+};
+
+
+exports.postForgotPassword = function (req, res) {
+    
+    var nintydaysinMins = 129600;
+    var todaysDate = new Date();
+    var expiredLinkDate = new Date(todaysDate.getTime() + nintydaysinMins * 60000);
+
+    //Save previous form
+    var prevForm = {
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        email: req.body.email
+    }
+
+    //Check if any fields are missing
+    var missingFields = [];
+    req.checkBody('email', 'Email is required').notEmpty();
+    req.checkBody('firstname', 'First name is required').notEmpty();
+    req.checkBody('lastname', 'Last name is required').notEmpty();
+
+    var valErrors = req.validationErrors();
+    for (var x in valErrors)
+        missingFields.push(valErrors[x]);
+
+    //If at least one error was found
+    if (missingFields.length) {
+        prevForm.errors = missingFields;
+        res.render('passwordForgotten', prevForm);
+    } else {
+
+        User.findUserByEmail(req.body.email, function (err, user) {
+            if (err) {
+                console.log(err);
+                req.flash('error_msg', 'Could not reset password at this time. Please contact the administrator to reset password.');
+                res.redirect('/login');
+
+            } else {
+                //Validate the form for errors
+                var formErrors = [];
+
+                if (!user) {
+                    formErrors.push('Email address is not registered!');
+
+                } else if ((user.firstname.toLowerCase() != req.body.firstname.toLowerCase())
+                     || (user.lastname.toLowerCase() != req.body.lastname.toLowerCase())) {
+                    formErrors.push('Credentials do not match!');
+
+                } else if (!user.isActive) {
+                    formErrors.push('Your account has been suspended. Please contact your agency administrator.');
+                    req.flash('error_msg', 'Your account has been suspended. Please contact your agency administrator.');
+                    res.redirect('/login');
+                }
+
+                //If at least one error was found
+                if (formErrors.length) {
+                    prevForm.errors = formErrors;
+                    res.render('passwordForgotten', prevForm);
+
+                } else {
+                    var token = crypto.randomBytes(20).toString('hex');
+                    user.resetPasswordExpires = expiredLinkDate;
+                    user.resetPasswordToken = token;
+
+                    user.save(function (err) {
+                        if (err) {
+                            req.flash('error_msg', 'Could not reset password at this time. Please contact the administrator to reset password.');
+                            res.redirect('/login');
+                        } else {
+                            sendResetPasswordEmail(user.email, token)
+                            req.flash('success_msg', 'Reset information successfully sent to ' + user.email);
+                            res.redirect('/login');
+                        }
+                    });
+                }
+            }
+
+        });
+    }
+};
+
+exports.getResetForgottenUserPass = function (req, res) {
+    console.log("Reset Forgotten Pass");
+    if (req.params.token) {
+        User.findUserByToken(req.params.token, function (err, user) {
+            if (err) {
+                console.log('Could not find user by token: ' + token);
+                req.flash('error_msg', 'Could not reset password at this time. Please contact the administrator to reset password.');
+                res.redirect('/login');
+            } else {
+                //Check If the user's password token has expired
+                var todaysDate = new Date();
+                console.log("User Reset Password Expires Date: " + user.resetPasswordExpires);
+
+                //If The user's password token has expired
+                if (todaysDate.getTime() >= user.resetPasswordExpires.getTime()) {
+                    console.log("***The password is expired -- login.js 187");
+                    req.flash('error_msg', 'The link to reset password has expired. Please request a new password.');
+                    res.redirect('/forgotpassword');
+                } else {
+                    res.render('passwordReset', { user: user, token: req.params.token });
+                }
+            }
+        });
+    } else {
+        res.redirect('/login');
+    }
+};
+
+/**
+ * Sends an email to user to reset forgotten password
+ *
+ * @param email the user's email address
+ * @param token the user's random generated token
+ */
+function sendResetPasswordEmail(email, token) {
+    return emailService.send({
+        'to': email,
+        'from': config.email.from,
+        'fromName': config.email.fromName,
+        'subject': 'BOLO Alert: Reset password requested',
+        'text': 'A password reset has been requested for the account registered to this email.\n' +
+          'To change your password, follow this link: \n\n' +
+          config.appURL + '/forgotpassword/' + token + '\n\n' +
+          'If you did not request to change your password, please contact a system administrator and immediately change your password.'
+    });
 };
