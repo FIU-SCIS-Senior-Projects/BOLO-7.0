@@ -18,7 +18,7 @@ block admin-content
             tbody
                 each category in categories
                     tr
-                        td: a( href='/admin/category/' + category.id ) #{category.name}
+                        td: a( href='/admin/category/edit/' + category.id ) #{category.name}
                         td #{category.createdOn}
     else
         p No Categories Found
