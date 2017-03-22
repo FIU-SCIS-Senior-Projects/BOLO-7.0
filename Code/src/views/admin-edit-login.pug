@@ -4,14 +4,98 @@ include includes/mixins
 block jumbo-desc
     h3 Edit Login
 
+
 block admin-content
     .container-fluid
         form(action= "/admin/edit/login" method="post")
-            +input_textarea('in', 'Login Markdown Editor', 'Write text here...', true, markdown)
+           
+            <input type="file" name="img1" id="img1">
+            //<input type="text" name="file_name" id="file_name" size="1">
+           
+          
+            div.input
+                input(type="text", name="myTextField", id="mytitle", size=30, placeholder="Edit Title here...")
+               
+            div.input
+                input(type="text", name="myTextField2", id="mysubtitle", size=30, placeholder="Edit Subtitle here...")
+          
+            +input_textarea('in', '', '', true,markdown)
+                   
+            
             .row
                 h3 Preview
                 #markdown.col-lg-12
+        
             .form-group
-                button.btn.btn-default(name='save' type='submit' value='Save' role='submit') Save
+                button.btn.btn-default(name='save' type='submit' value='Save' role='submit' id='mybutton') Save
+            
+       
         script(rel='javascript' src='/js/showdown.min.js')
         script(rel='javascript' src='/js/mdEditor.js')
+        script(rel='javascript' src='/src/public/Login.md')
+        script(type='text/javascript').
+            //var inputTitle= document.getElementById("mytitle").value;
+            var markdown;
+            var fii= function(){
+                var title='';
+                var subtitle='';
+                var file_name='';
+                var markdown1='';
+                var markdown2='';
+                var markdown3='';
+                var markdownLogo;
+                var markdownTitle;
+                var markdownSubtitle;
+
+
+              
+                document.getElementById("mytitle").addEventListener('change', function(){
+                    title= document.getElementById("mytitle").value;
+                    updateMarkdown();
+                });
+
+                 document.getElementById("mysubtitle").addEventListener('change', function(){
+                    subtitle= document.getElementById("mysubtitle").value;
+                    updateMarkdown();
+                });
+
+                 document.getElementById("img1").addEventListener('change', function(){
+                    file_name = this.value.split('\\').pop();
+                    updateMarkdown();
+                });
+
+                var updateMarkdown = function(){
+
+                var textInputBox = document.getElementsByName('in')[0];
+                //var markdown = '';
+                if(file_name){
+                    markdown1 = `<img src="/img/${file_name}" alt="BOLO Logo"style="height:220px;"/>`;
+                    markdownLogo = markdown1;
+                    
+                }
+                if(title){
+                    markdown2 =  title ;
+                    markdownTitle = markdown2;
+                }
+                    if(subtitle){
+                    markdown3 =  subtitle ;
+                    markdownSubtitle = markdown3;
+                }
+                
+                markdown = markdownLogo + '\n#' + markdownTitle + '\n###'+ markdownSubtitle;
+                textInputBox.value= markdown;
+                textInputBox.dispatchEvent(new Event('change'));
+                };
+
+                markdown = markdownLogo + markdownTitle + markdownSubtitle; 
+ 
+
+                //updateMarkdown();
+                document.getElementById("mybutton").addEventListener("click", myfunction());
+                function myfunction(){
+                    //inputTitle = document.getElementById("mytitle").value;
+                    console.log("the title entered is: " + inputTitle);
+                }
+
+            }
+            fii();

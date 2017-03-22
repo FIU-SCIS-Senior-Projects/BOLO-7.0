@@ -2,13 +2,19 @@ window.onload = function () {
     var converter = new showdown.Converter();
     var textInputBox = document.getElementsByName('in')[0];
     var markdownArea = document.getElementById('markdown');
-
+   
     var convertTextAreaToMarkdown = function () {
-        var markdownText = textInputBox.value;
+        console.log("convertTextAreaToMarkdown");
+        var markdownText = '';
+        markdownText = textInputBox.value;
         markdownArea.innerHTML = converter.makeHtml(markdownText)
     };
 
-    textInputBox.addEventListener('input', convertTextAreaToMarkdown);
+  
 
+    textInputBox.addEventListener('change', convertTextAreaToMarkdown);
+  
     convertTextAreaToMarkdown();
+  
 };
+
