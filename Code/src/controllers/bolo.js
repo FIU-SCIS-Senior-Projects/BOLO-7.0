@@ -1088,17 +1088,14 @@ exports.postEditBolo = function (req, res, next) {
  * List archived bolos
  */
 exports.renderArchivedBolos = function (req, res, next) {
-
     console.log(req.query);
     const limit = config.const.BOLOS_PER_QUERY;
     const filter = req.query.filter || 'allBolos';
-    const isArchived = req.query.archived ;
+    const isArchived = req.query.archived || false;
     const agency = req.query.agency || '';
-    
     switch (filter) {
-
         case 'allBolos':
-            Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+            Bolo.findAllBolos(true, true, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
@@ -1106,15 +1103,16 @@ exports.renderArchivedBolos = function (req, res, next) {
             });
             break;
         case 'myAgency':
-            Bolo.findBolosByAgencyID(req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+            Bolo.findBolosByAgencyID(req.user.agency, true, true, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
+                    console.log(listOfBolos);
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
                 }
             });
             break;
         case 'myBolos':
-            Bolo.findBolosByAuthor(req.user.id, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+            Bolo.findBolosByAuthor(req.user.id, true, true, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
@@ -1122,7 +1120,7 @@ exports.renderArchivedBolos = function (req, res, next) {
             });
             break;
         default:
-           Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+           Bolo.findAllBolos(true, true, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
                     console.log('Error! default case was called');
