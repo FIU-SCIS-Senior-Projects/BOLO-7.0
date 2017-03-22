@@ -3,6 +3,7 @@ var crypto = require('crypto');
 var bcrypt = require('bcrypt-nodejs');
 var emailService = require('../services/email-service');
 var config = require('../config');
+var util = require('util');
 
 exports.checkPassword = function (req, res) {
     if (req.isAuthenticated()) {
@@ -42,16 +43,11 @@ exports.checkPassword = function (req, res) {
 
 exports.newPassword = function (req, res) {
     var user = req.user;
-    
-
-
     var todaysDate = new Date();
     var nintydaysinMins = 129600;
     var newPasswordDate = new Date(todaysDate.getTime() + nintydaysinMins * 60000);
     console.log("THis is the new password Date: " + newPasswordDate);
     if (req.body.password || req.body.password === "") {
-        console.log("The New Password is: " + req.body.password);
-
         var errors = [];
         req.checkBody('password', 'Password format is not valid!').isCorrectPasswordFormat();
         var valErrors = req.validationErrors();
@@ -68,7 +64,8 @@ exports.newPassword = function (req, res) {
         if (errors.length) {
 
             console.log('Validation has failed');
-            res.render('passwordReset', {errors: errors});
+            if (req.params.token) res.render('passwordReset', { errors: errors, token: req.params.token });
+            else res.render('passwordReset', { errors: errors });
         }
 
         else {
@@ -76,19 +73,44 @@ exports.newPassword = function (req, res) {
                 if (err) throw (err);
                 bcrypt.hash(req.body.password, salt, null, function (err, hash) {
                     console.log("The new Password salt is: " + hash);
-                    user.password = hash;
-                    user.passwordDate = newPasswordDate;
-                    user.isActive = true;
-                    user.save(function (err) {
-                        if (err) {
-                            req.flash('error_msg', getErrorMessage(err)[0].msg);
-                            res.redirect('/password/renderResetPass');
-                        } else {
-                            console.log("The user's Password Expires on: " + newPasswordDate);
-                            req.flash('success_msg', 'Password Has Been Updated for ' + user.username);
-                            res.redirect('/bolo');
-                        }
-                    });
+                   
+                    if (!user && req.params.token) {
+                        User.findUserByToken(req.params.token, function (err, user) {
+                            user.password = hash;
+                            user.passwordDate = newPasswordDate;
+                            user.resetPasswordExpires = todaysDate; 
+                            user.isActive = true;
+                            user.save(function (err) {
+                                if (err) {
+                                    req.flash('Password could not be Updated. Please contact the administrator.');
+                                    res.redirect('/login');
+                                } else {
+                                    sendPasswordChangedEmail(user);
+                                    console.log("The user's Password Expires on: " + newPasswordDate);
+                                    req.flash('success_msg', 'Password Has Been Updated for ' + user.username);
+                                    res.redirect('/login');
+                                }
+                            });
+                        });
+                    } else if (user) {
+                        user.password = hash;
+                        user.passwordDate = newPasswordDate;
+                        user.isActive = true;
+                        user.save(function (err) {
+                            if (err) {
+                                req.flash('error_msg', getErrorMessage(err)[0].msg);
+                                res.redirect('/password/renderResetPass');
+                            } else {
+                                sendPasswordChangedEmail(user);
+                                console.log("The user's Password Expires on: " + newPasswordDate);
+                                req.flash('success_msg', 'Password Has Been Updated for ' + user.username);
+                                res.redirect('/bolo');
+                            }
+                        });
+                    } else {
+                        req.flash('Password could not be Updated. Please contact the administrator.');
+                        res.redirect('/login');
+                    }
                 })
             });
         }
@@ -129,8 +151,6 @@ exports.resetUserPass = function (req, res) {
         sendUserPassResetNotification(user.email, user.firstname, user.lastname, passwordToken, user.username);
 
     });
-
-
 };
 
 /**
@@ -144,13 +164,13 @@ function sendPasswordChangedEmail(user) {
         'your account password has just been changed. Please contact your ' +
         'agency administrator if you did not authorize this.\n\n' +
         '-- BOLO Flier Creator Team',
-        user.fname
+        user.firstname
     );
-    emailService.send({
+    return emailService.send({
         'to': user.email,
         'from': config.email.from,
         'fromName': config.email.fromName,
-        'subject': 'BOLO Flier Creator - Account Update',
+        'subject': 'Password Has Been Reset For ' + user.firstname + ' ' + user.lastname,
         'text': message
     });
 }

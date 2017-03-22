@@ -81,17 +81,25 @@ function sendBoloNotificationEmail(bolo, template) {
         }
 
         //Write BOLO Images based on how many images exist, to the PDF
-
+        var onePhoto, twoPhotos, threePhotos;
+        
+        //NO PICTURES
+        if ((bolo.featured.data == undefined) && (bolo.other1.data == undefined) && (bolo.other2.data == undefined)) {
+            var noPic = "public/img/nopic.png";
+            doc.image(noPic, 170, 135, {
+                width: 290, height: 230, align: 'center'
+            }).moveDown(5);
+            onePhoto = true;
+        }
         //Only Featured is present
-        if ((bolo.other1.data == undefined) && (bolo.other2.data == undefined)) {
+        else if ((bolo.other1.data == undefined) && (bolo.other2.data == undefined)) {
             doc.image(bolo.featured.data, 170, 135, {
                 width: 290, height: 230, align: 'center'
             }).moveDown(5);
-            var onePhoto = true;
+            onePhoto = true;
         }
         // Only Featured and Other1 are present
-        var twoPhotos;
-        if ((bolo.other1.data != undefined) && (bolo.other2.data == undefined)) {
+        else if ((bolo.other1.data != undefined) && (bolo.other2.data == undefined)) {
             doc.image(bolo.featured.data, 320, 135, {
                 width: 270, height: 210, align: 'center'
             }).moveDown(5);
@@ -102,7 +110,7 @@ function sendBoloNotificationEmail(bolo, template) {
             twoPhotos = true;
         }
         // Only Featured and Other2 are present
-        if ((bolo.other2.data != undefined) && (bolo.other1.data == undefined)) {
+        else if ((bolo.other2.data != undefined) && (bolo.other1.data == undefined)) {
             doc.image(bolo.featured.data, 30, 135, {
                 width: 270, height: 210, align: 'center'
             }).moveDown(5);
@@ -113,7 +121,7 @@ function sendBoloNotificationEmail(bolo, template) {
             twoPhotos = true;
         }
         // All Images are present
-        if ((bolo.other1.data != undefined) && (bolo.other2.data != undefined)) {
+        else if ((bolo.other1.data != undefined) && (bolo.other2.data != undefined)) {
             doc.image(bolo.featured.data, 228, 135, {
                 width: 170, height: 110, align: 'center'
             }).moveDown(5);
@@ -125,7 +133,7 @@ function sendBoloNotificationEmail(bolo, template) {
             doc.image(bolo.other2.data, 415, 135, {
                 width: 170, height: 110, align: 'right'
             }).moveDown(5);
-            var threePhotos = true;
+            threePhotos = true;
         }
 
         //--------------TEXT PORTION-----------------------
@@ -150,63 +158,68 @@ function sendBoloNotificationEmail(bolo, template) {
 
         //Write Category and BOLO status to the PDF Document
         doc.fontSize(23);
-        if (bolo.status !== 'ACTIVE') {
-            if (onePhoto) {
-                doc.fillColor('black');
-                doc.text(bolo.category.name, 85, 100, {align: 'center'}); //original 100, 140
-                doc.fontSize(80);
-                doc.fillColor('red');
-                doc.text(bolo.status, 110, 210, {align: 'center'})
-                    .moveDown();
-            }
-            if (twoPhotos) {
-                doc.fillColor('black');
-                doc.text(bolo.category.name, 85, 100, {align: 'center'}); //original 100, 140
-                doc.fontSize(80);
-                doc.fillColor('red');
-                doc.text(bolo.status, 120, 210, {align: 'center'})
-                    .moveDown();
-            }
-            if (threePhotos) {
-                doc.fillColor('black');
-                doc.text(bolo.category.name, 85, 100, {align: 'center'}); //original 100, 140
-                doc.fontSize(80);
-                doc.fillColor('red');
-                doc.text(bolo.status, 120, 150, {align: 'center'})
-                    .moveDown();
-            }
-        }
-        else {
-            if (onePhoto) {
-                doc.fillColor('red');
-                doc.text(bolo.category.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
-                    .moveDown(11);
-            }
-            if (twoPhotos) {
-                doc.fillColor('red');
-                doc.text(bolo.category.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
-                    .moveDown(5);
-            }
+        Category.findCategoryByID(bolo.category, function(err, boloCategory){
+            if (bolo.status !== 'ACTIVE') {
+                if (onePhoto) {
+                    doc.fillColor('black');
+                    doc.text(boloCategory.name, 85, 100, {align: 'center'}); //original 100, 140
+                    doc.fontSize(80);
+                    doc.fillColor('red');
+                    doc.text(bolo.status, 110, 210, {align: 'center'})
+                        .moveDown();
+                }
+                if (twoPhotos) {
+                    doc.fillColor('black');
+                    doc.text(boloCategory.name, 85, 100, {align: 'center'}); //original 100, 140
+                    doc.fontSize(80);
+                    doc.fillColor('red');
+                    doc.text(bolo.status, 120, 210, {align: 'center'})
+                        .moveDown();
+                }
+                if (threePhotos) {
+                    doc.fillColor('black');
+                    doc.text(boloCategory.name, 85, 100, {align: 'center'}); //original 100, 140
+                    doc.fontSize(80);
+                    doc.fillColor('red');
+                    doc.text(bolo.status, 120, 150, {align: 'center'})
+                        .moveDown();
+                }
 
-            if (threePhotos) {
-                doc.fillColor('red');
-                doc.text(bolo.category.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
-                    .moveDown();
+                doc.end();
             }
+            else {
+                if (onePhoto) {
+                    doc.fillColor('red');
+                    doc.text(boloCategory.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
+                        .moveDown(11);
+                }
+                if (twoPhotos) {
+                    doc.fillColor('red');
+                    doc.text(boloCategory.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
+                        .moveDown(5);
+                }
 
-            doc.text("A BOLO has been issued! Details have been purposely hidden for security.", {align: 'center'})
-                .moveDown(0.25);
-            doc.text("Please login to the BOLO database to view the full details of this BOLO.", {align: 'center'})
-                .moveDown(0.25);
-            doc.end();
-        }
+                if (threePhotos) {
+                    doc.fillColor('red');
+                    doc.text(boloCategory.name + " -- " + bolo.status, 85, 100, {align: 'center'})//original 100, 140
+                        .moveDown();
+                }
+
+                doc.text("A BOLO has been issued! Details have been purposely hidden for security.", {align: 'center'})
+                    .moveDown(0.25);
+                doc.text("Please login to the BOLO database to view the full details of this BOLO.", {align: 'center'})
+                    .moveDown(0.25);
+                doc.end();
+            }
+        });
+        
 
 
         User.findAllUsers(function (err, users) {
             if (err) {
                 console.log("Error finding all users...\n" + err);
             } else {
-                var tmp = config.email.template_path + '\\' + template + '.pug';
+                var tmp = config.email.template_path + '/' + template + '.pug';
                 var tdata = {
                     'bolo': bolo,
                     'app_url': config.appURL
@@ -789,7 +802,6 @@ exports.postCreateBolo = function (req, res, next) {
             req.flash('error_msg', 'Could not find categories');
             res.redirect('/bolo/create');
         } else {
-
             //Holds previously entered form data
             var prevForm = {
                 dateReported1: req.body.dateReported,
@@ -805,7 +817,6 @@ exports.postCreateBolo = function (req, res, next) {
             req.checkBody('category', 'Please select a category').notEmpty();
             req.checkBody('dateReported', 'Please enter a date').notEmpty();
             req.checkBody('timeReported', 'Please enter a time').notEmpty();
-             
             var valErrors = req.validationErrors();
             for (var x in valErrors)
                 errors.push(valErrors[x]);
@@ -814,16 +825,8 @@ exports.postCreateBolo = function (req, res, next) {
             const reportedTime = req.body.timeReported.split(':');
             const newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
                 reportedTime[0], reportedTime[1], 0, 0);
-            if (isNaN(newDate.getTime())) {
+            if (isNaN(newDate.getTime()))
                 errors.push('Please Enter a Valid Date');
-            }
-
-            Category.findCategoryByName(req.body.category, function (err, category) {
-                if (err) next(err);
-                
-                if (category == null)  
-                    errors.push('Please select a category');
-               
             // If there are errors
             if (errors.length) {
                 console.log("Validation errors:" + errors);
@@ -831,10 +834,12 @@ exports.postCreateBolo = function (req, res, next) {
                 //Render back page
                 prevForm.errors = errors;
                 res.render('bolo-create', prevForm);
-               
             }
             //If no errors were found
             else {
+                Category.findCategoryByName(req.body.category, function (err, category) {
+                    if (err) next(err);
+                    else {
                         const token = crypto.randomBytes(20).toString('hex');
                         var newBolo = new Bolo({
                             author: req.user.id,
@@ -941,6 +946,7 @@ exports.postCreateBolo = function (req, res, next) {
                     }
                 })
             }
+        }
     })
 };
 
@@ -986,7 +992,6 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                                     else {
                                         sendBoloNotificationEmail(boloToConfirm,'update-bolo-notification');
                                         req.flash('success_msg', 'Bolo has been confirmed');
-                                        res.set("Connection", "close");  
                                         res.redirect('/bolo');
                                     }
                                 });
@@ -1051,8 +1056,7 @@ exports.confirmBolo = function (req, res, next) {
                                 if (err) next(err);
                                 else {
                                     sendBoloNotificationEmail(boloToConfirm,'update-bolo-notification');
-                                    req.flash('success_msg', 'Bolo has been confirmed'); 
-                                    res.set("Connection", "close");                            
+                                    req.flash('success_msg', 'Bolo has been confirmed');                            
                                     res.redirect('/bolo');
                                 }
                             });
@@ -1257,8 +1261,54 @@ exports.postEditBolo = function (req, res, next) {
 /**
  * List archived bolos
  */
-exports.renderArchivedBolos = function (req, res) {
+exports.renderArchivedBolos = function (req, res, next) {
+    console.log(req.query);
+    const limit = config.const.BOLOS_PER_QUERY;
+    const filter = req.query.filter || 'allBolos';
+    const isArchived = req.query.archived || false;
+    const agency = req.query.agency || '';
+    switch (filter) {
+        case 'allBolos':
+            Bolo.findAllBolos(true, true, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+        case 'myAgency':
+            Bolo.findBolosByAgencyID(req.user.agency, true, true, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    console.log(listOfBolos);
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+        case 'myBolos':
+            Bolo.findBolosByAuthor(req.user.id, true, true, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+        default:
+           Bolo.findAllBolos(true, true, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) next(err);
+                else {
+                    console.log('Error! default case was called');
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+            break;
+    
+    }
+   
+           
     res.render('bolo-archive');
+   
+ 
 };
 
 /**
