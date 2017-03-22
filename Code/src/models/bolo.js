@@ -67,6 +67,10 @@ var Schema = new mongoose.Schema({
         type: String,
         required: true
     },
+    boloToDelete: {
+        type: String,
+        required: true
+    },
     isArchived: {
         type: Boolean,
         default: false
@@ -105,6 +109,11 @@ module.exports.findBolosByAgencyID = function (agencyID, isConfirmed, isArchived
         .exec(callback);
 };
 
+module.exports.findAllBolosByAgencyID = function (agencyID, callback){
+    Bolo.find({agency: agencyID, isConfirmed: true})
+        .exec(callback);
+};
+
 module.exports.findIfEmailIsInBolo = function (boloID, email, callback) {
     Bolo.find({_id: boloID, subscribers: email})
         .exec(callback);
@@ -112,7 +121,7 @@ module.exports.findIfEmailIsInBolo = function (boloID, email, callback) {
 
 module.exports.subscribeToBOLO = function (boloId, email, callback) {
     Bolo.findByIdAndUpdate(boloId,
-        {$push: {subscribers: email}},
+        {$addToSet: {subscribers: email}},
         {safe: true, upsert: true},
         callback);
 };

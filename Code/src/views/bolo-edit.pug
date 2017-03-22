@@ -1,5 +1,12 @@
 extends layout
 
+block scripts
+    script(src="/jquery-validation-1.15.0/jquery.validate.js")
+    script(src="/jquery-validation-1.15.0/form-validation.js")
+    script(src="/jquery-validation-1.15.0/additional-methods.js")
+    script(src="/js/JIC.min.js")
+    script(src="/js/imageCompression.js")
+
 block jumbo
     .jumbotron
         .container
@@ -27,7 +34,7 @@ block content
                             dt Updated:
                             dd #{bolo.lastUpdated}
 
-    form( action="/bolo/edit/" + bolo.id enctype="multipart/form-data" method="post" )
+    form( name='editBoloForm' action="/bolo/edit/" + bolo.id enctype="multipart/form-data" method="post" )
         div#category
             -
                 var statuses = [ 'ACTIVE', 'FOUND', 'ARRESTED', 'RESOLVED']
@@ -36,9 +43,9 @@ block content
 
         .form-group
             .col-xs-12.col-md-6
-                +input_text( "dateReported", "Date Reported (DD/MM/YYYY)", bolo.dateRecovered, false, bolo.dateRecovered1 )
+                +input_text( "dateReported", "Date Reported (DD/MM/YYYY)", "", false, prevForm.dateReported )
             .col-xs-12.col-md-6
-                +input_text( "timeReported", "Time Reported (HH:MM)", bolo.timeRecovered, false, bolo.timeRecovered1 )
+                +input_text( "timeReported", "Time Reported (HH:MM)", "", false, prevForm.timeReported )
 
             +input_text_static( "category", "Category", "", true, bolo.category.name)
             div#categoryForms
@@ -46,7 +53,7 @@ block content
                 window.onload = function () {
                     var newForms = document.getElementById('categoryForms')
                     const category = !{JSON.stringify(bolo.category)};
-                    const boloFields = !{JSON.stringify(bolo.fields)};
+                    const boloFields = !{JSON.stringify(prevForm.fields)};
                     for (num in category.fields) {
                         var newDiv = document.createElement('div'),
                                 newLabel = document.createElement('label'),
@@ -98,11 +105,11 @@ block content
                         i No Image Found
 
             .col-xs-12
-                +input_text( "video_url", "Video Link", bolo.videoURL, false, vid1, "url" )
+                +input_text( "video_url", "Video Link", "", false, prevForm.vid)
             .col-xs-12
-                +input_textarea( "info", "Additional Info", bolo.info, false, info1)
+                +input_textarea( "info", "Additional Info", "", false, prevForm.info)
             .col-xs-12
-                +input_textarea( "summary", "Summary", bolo.summary, false, summary1)
+                +input_textarea( "summary", "Summary", "", false, prevForm.summary)
 
             .col-xs-12
                 button.btn.btn-primary( type="submit" value="save" id= "buttonClickEdit" disabled = false ) Update

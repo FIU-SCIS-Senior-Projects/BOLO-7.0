@@ -56,6 +56,9 @@ config.email = {
     'template_path': path.resolve(__dirname, './views/email')
 };
 
+//Default title for the User Guide
+config.title = 'Welcome to the User Guide';
+
 /**
  * Validation Policy
  *
