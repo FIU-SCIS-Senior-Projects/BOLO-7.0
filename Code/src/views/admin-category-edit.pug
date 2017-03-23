@@ -6,7 +6,9 @@ block jumbo-desc
 
 
 block admin-content
-    a.btn.btn-default( type = "button" onClick="history.go(-1);return true;") Back to Category Details
+    a.btn.btn-default( type = "button" onClick="history.go(-1);return true;" style="float:left") Back to Category Details
+    form(method="POST" action="/admin/category/edit/remove/" + category.id )
+        button.btn.btn-default(type='submit') Delete Category
     h2 #{category.name} BOLO
 
     script.

@@ -114,6 +114,11 @@ module.exports.findAllBolosByAgencyID = function (agencyID, callback){
         .exec(callback);
 };
 
+module.exports.findBoloByCategoryID = function (id, callback){
+    Bolo.findOne({category: id})
+        .exec(callback);
+};
+
 module.exports.findIfEmailIsInBolo = function (boloID, email, callback) {
     Bolo.find({_id: boloID, subscribers: email})
         .exec(callback);

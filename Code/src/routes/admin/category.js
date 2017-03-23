@@ -12,6 +12,7 @@ router.get('/', control.listCategories);
 router.get('/create', control.getCategoryForm);
 router.post('/create', control.createNewCategory);
 router.get('/edit/:id', control.getEditCategoryForm);
+router.post('/edit/remove/:id', control.removeCategory);
 router.post('/editCat/:id', control.postEditCategory);
 router.get('/:id', control.getCategoryDetails);
 
