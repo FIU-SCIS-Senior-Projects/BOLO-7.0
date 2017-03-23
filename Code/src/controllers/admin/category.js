@@ -146,7 +146,7 @@ exports.removeCategory = function (req, res, next) {
         else{
             console.log("Bolo found \n" + boloFound );
             if(boloFound){
-                req.flash('error_msg', 'Category cannot be deleted while in use by a BOLO!');
+                req.flash('error_msg', 'Category cannot be deleted while being in use by a BOLO!');
                 res.redirect('/admin/category/');
             }
             else{   
