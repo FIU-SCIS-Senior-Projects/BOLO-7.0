@@ -34,20 +34,19 @@ block admin-content
         script(rel='javascript' src='/js/mdEditor.js')
         script(rel='javascript' src='/src/public/Login.md')
         script(type='text/javascript').
-            //var inputTitle= document.getElementById("mytitle").value;
+            
+            var title;
+            var subtitle;
+            var file_name;
+            var markdown1;
+            var markdown2;
+            var markdown3;
+            var markdownLogo;
+            var markdownTitle;
+            var markdownSubtitle;
             var markdown;
+            var mytextarea = document.getElementsByName('in')[0].value;
             var fii= function(){
-                var title='';
-                var subtitle='';
-                var file_name='';
-                var markdown1='';
-                var markdown2='';
-                var markdown3='';
-                var markdownLogo;
-                var markdownTitle;
-                var markdownSubtitle;
-
-
               
                 document.getElementById("mytitle").addEventListener('change', function(){
                     title= document.getElementById("mytitle").value;
@@ -56,6 +55,7 @@ block admin-content
 
                  document.getElementById("mysubtitle").addEventListener('change', function(){
                     subtitle= document.getElementById("mysubtitle").value;
+                    markdownStorage = subtitle;
                     updateMarkdown();
                 });
 
@@ -67,35 +67,32 @@ block admin-content
                 var updateMarkdown = function(){
 
                 var textInputBox = document.getElementsByName('in')[0];
-                //var markdown = '';
+                
                 if(file_name){
-                    markdown1 = `<img src="/img/${file_name}" alt="BOLO Logo"style="height:220px;"/>`;
-                    markdownLogo = markdown1;
-                    
+                    markdownLogo = `<img src="/img/${file_name}" alt="BOLO Logo"style="height:220px;"/>`;                 
+                }
+                else{
+                    file_name = mytextarea.substring(15,mytextarea.indexOf(" alt=")-1);
+                    markdownLogo = `<img src="/img/${file_name}" alt="BOLO Logo"style="height:220px;"/>`;
                 }
                 if(title){
-                    markdown2 =  title ;
-                    markdownTitle = markdown2;
+                    markdownTitle = title;
                 }
-                    if(subtitle){
-                    markdown3 =  subtitle ;
-                    markdownSubtitle = markdown3;
+                else{
+                    title = mytextarea.substring(mytextarea.indexOf("#")+1,mytextarea.indexOf("###")-1)
+                    markdownTitle = title;
+                }
+                if(subtitle){
+                    markdownSubtitle = subtitle;
+                }
+                else{
+                    subtitle= mytextarea.substring(mytextarea.indexOf("###")+3,9999);
+                    markdownSubtitle = subtitle;
                 }
                 
                 markdown = markdownLogo + '\n#' + markdownTitle + '\n###'+ markdownSubtitle;
                 textInputBox.value= markdown;
                 textInputBox.dispatchEvent(new Event('change'));
                 };
-
-                markdown = markdownLogo + markdownTitle + markdownSubtitle; 
- 
-
-                //updateMarkdown();
-                document.getElementById("mybutton").addEventListener("click", myfunction());
-                function myfunction(){
-                    //inputTitle = document.getElementById("mytitle").value;
-                    console.log("the title entered is: " + inputTitle);
-                }
-
             }
             fii();
