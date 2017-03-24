@@ -8,26 +8,26 @@ block jumbo-desc
 block admin-content
     .container-fluid
         form(action= "/admin/edit/login" method="post")
+            .form-group
+                label.control-label( for=img1 ) Image           
+                input(type="file" name="img1" id="img1")
            
-            <input type="file" name="img1" id="img1">
-            //<input type="text" name="file_name" id="file_name" size="1">
-           
+            .form-group
+                label.control-label( for=myTextField ) Title
+                input.form-control(type="text", name="myTextField", id="mytitle", size=30, placeholder="Edit Title here...")
+            .form-group
+                label.control-label( for=myTextField2 ) Subtitle
+                input.form-control(type="text", name="myTextField2", id="mysubtitle", size=30, placeholder="Edit Subtitle here...")
           
-            div.input
-                input(type="text", name="myTextField", id="mytitle", size=30, placeholder="Edit Title here...")
-               
-            div.input
-                input(type="text", name="myTextField2", id="mysubtitle", size=30, placeholder="Edit Subtitle here...")
-          
-            +input_textarea('in', '', '', true,markdown)
-                   
-            
+                textarea.form-control( name='in' type="text" required style="display:none" ) #{markdown}     
+
             .row
                 h3 Preview
                 #markdown.col-lg-12
-        
+            br
             .form-group
                 button.btn.btn-default(name='save' type='submit' value='Save' role='submit' id='mybutton') Save
+
             
        
         script(rel='javascript' src='/js/showdown.min.js')
