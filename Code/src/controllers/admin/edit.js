@@ -48,7 +48,7 @@ exports.getLoginPageForm = function (req, res) {
                 {errors: [{msg: 'Error! Login.md could not be read'}]});
         } else {
             console.log('Login is being read');
-            res.render('admin-edit-Login', {markdown: data.toString()});
+            res.render('admin-edit-login', {markdown: data.toString()});
         }
     });
 };

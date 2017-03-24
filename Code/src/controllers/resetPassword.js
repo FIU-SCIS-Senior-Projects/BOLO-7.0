@@ -155,7 +155,6 @@ exports.resetUserPass = function (req, res) {
 
 /**
  * Send an email when a user's password has been changed successfully.
- * @todo Try to implement this function when the user has changed his/her password
  */
 function sendPasswordChangedEmail(user) {
     var message = util.format(

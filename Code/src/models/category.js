@@ -33,3 +33,7 @@ module.exports.findCategoryByID = function (id, callback) {
 module.exports.findCategoryByName = function (name, callback) {
     Category.findOne({name: name}, callback);
 };
+
+module.exports.removeCategory = function (id, callback) {
+    Category.remove({_id: id}).exec(callback);
+};

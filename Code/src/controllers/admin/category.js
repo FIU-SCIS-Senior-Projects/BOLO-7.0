@@ -1,5 +1,5 @@
 var Category = require('../../models/category');
-
+var Bolo = require('../../models/bolo');
 /**
  * Error handling for MongoDB
  */
@@ -140,6 +140,25 @@ exports.postEditCategory = function (req, res, next) {
 
 };
 
-exports.removeCategory = function (req, res) {
-
+exports.removeCategory = function (req, res, next) {
+    Bolo.findBoloByCategoryID(req.params.id, function(err, boloFound){
+        if(err) next(err);
+        else{
+            console.log("Bolo found \n" + boloFound );
+            if(boloFound){
+                req.flash('error_msg', 'Category cannot be deleted while being in use by a BOLO!');
+                res.redirect('/admin/category/');
+            }
+            else{   
+                    Category.removeCategory(req.params.id, function(err){
+                        if(err) next(err);
+                        else{
+                            console.log("BOLO is deleted");
+                            req.flash('success_msg', 'Category has been deleted!');
+                            res.redirect('/admin/category/');
+                        }
+                    });
+            }
+        }
+    });
 };
