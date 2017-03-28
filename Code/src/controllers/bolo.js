@@ -382,6 +382,7 @@ function sendBoloUpdateConfirmationEmail(email, firstname, lastname, token) {
  * List active bolos based on query
  */
 exports.listBolos = function (req, res, next) {
+    console.log("entre a active bolossss")
     console.log(req.query);
     const limit = config.const.BOLOS_PER_QUERY;
     const filter = req.query.filter || 'allBolos';
@@ -389,6 +390,7 @@ exports.listBolos = function (req, res, next) {
     const agency = req.query.agency || '';
     switch (filter) {
         case 'allBolos':
+            console.log('Hitting render actives endpoint.');   
             Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
@@ -397,6 +399,7 @@ exports.listBolos = function (req, res, next) {
             });
             break;
         case 'myAgency':
+            console.log('Hitting render actives endpoint.');
             Bolo.findBolosByAgencyID(req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
@@ -405,6 +408,7 @@ exports.listBolos = function (req, res, next) {
             });
             break;
         case 'myBolos':
+            console.log('Hitting render actives endpoint.');
             Bolo.findBolosByAuthor(req.user.id, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
                 if (err) next(err);
                 else {
@@ -1264,51 +1268,56 @@ exports.postEditBolo = function (req, res, next) {
 exports.renderArchivedBolos = function (req, res, next) {
     console.log(req.query);
     const limit = config.const.BOLOS_PER_QUERY;
-    const filter = req.query.filter || 'allBolos';
+    const filterArchived = req.query.filterArchived || 'allBolos';
     const isArchived = req.query.archived || false;
     const agency = req.query.agency || '';
-    switch (filter) {
-        case 'allBolos':
-            Bolo.findAllBolos(true, true, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
-                else {
-                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                }
-            });
-            break;
-        case 'myAgency':
-            Bolo.findBolosByAgencyID(req.user.agency, true, true, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
-                else {
-                    console.log(listOfBolos);
-                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                }
-            });
-            break;
-        case 'myBolos':
-            Bolo.findBolosByAuthor(req.user.id, true, true, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
-                else {
-                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                }
-            });
-            break;
-        default:
-           Bolo.findAllBolos(true, true, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
-                else {
-                    console.log('Error! default case was called');
-                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                }
-            });
-            break;
-    
+    if (req.query.filterArchived){
+        switch (filterArchived) {
+            case 'allBolos':
+                console.log('Hitting render archives endpoint.');
+                Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                    if (err) next(err);
+                    else {
+                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                    }
+                });
+                break;
+            case 'myAgency':
+                console.log('Hitting render archives endpoint.');
+                Bolo.findBolosByAgencyID(req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                    if (err) next(err);
+                    else {
+                        console.log(listOfBolos);
+                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                    }
+                });
+                break;
+            case 'myBolos':
+                console.log('Hitting render archives endpoint.');
+                Bolo.findBolosByAuthor(req.user.id, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                    if (err) next(err);
+                    else {
+                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                    }
+                });
+                break;
+            default:
+            Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                    if (err) next(err);
+                    else {
+                        console.log('Error! default case was called');
+                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                    }
+                });
+                break;
+        
+        }
     }
-   
-           
-    res.render('bolo-archive');
-   
- 
+    else{
+         res.render('bolo-archive');
+         console.log("render bolo archive");
+    }
+
 };
 
 /**

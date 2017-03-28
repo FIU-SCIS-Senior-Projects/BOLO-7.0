@@ -2,7 +2,11 @@ var filterSelector = $('#filter');
 var filterArchivedSelector = $('#filterArchived');
 var agencyFilterSelector = $('#agencyFilter');
 var agencyFilterSelectorDiv = $('#agencyFilterDiv');
+
 var renderPage = function (bolosPerPage, visibleNumbers) {
+
+    console.log("Sending AJAX to get new BOLOS.")
+
     const filterValue = filterSelector.find("option:selected").val();
     const filterArchivedValue = filterArchivedSelector.find("option:selected").val();
     const agencyFilterValue = agencyFilterSelector.find("option:selected").val();
@@ -10,7 +14,8 @@ var renderPage = function (bolosPerPage, visibleNumbers) {
     const archivedBolos = $('#input').val() === 'archived';
     var boloDiv = $('#bolo-list');
     var pagingDiv = $('#bolo-paging');
-    if(!archivedBolos){
+
+    if(!archivedBolos) {
    
     $.ajax({
         
@@ -57,7 +62,7 @@ var renderPage = function (bolosPerPage, visibleNumbers) {
 }
 else{
     $.ajax({
-        url: '/bolo/list', type: 'GET',
+        url: '/bolo/archive', type: 'GET',
         data: {filterArchived: filterArchivedValue, archived: archivedBolos},
         success: function (responses) {
             if (!responses) {
@@ -96,10 +101,12 @@ else{
     })
 }
 };
+
 $(document).ready(function () {
     agencyFilterSelectorDiv.hide();
     renderPage(12, 8);
 });
+
 //When you change the filter, render the selected bolos, and the paging
 filterSelector.change(function () {
     if (filterSelector.val() === 'selectedAgency') {
@@ -108,9 +115,18 @@ filterSelector.change(function () {
         agencyFilterSelectorDiv.hide();
         agencyFilterSelector.val('').change();
     }
+
 });
+
+//When you change the filter, render the selected bolos, and the paging
+filterArchivedSelector.change(function () {
+    renderPage(12, 8);
+});
+
+console.log(filterArchivedSelector);
 
 //When you change the agency filter, render all the agencies bolos, and the paging
 agencyFilterSelector.change(function () {
     renderPage(12, 8);
+
 });
