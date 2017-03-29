@@ -23,7 +23,7 @@ $(function () {
         messages: {
             dateReported: {
                 required: 'Please enter a date',
-                dateITA: 'Please enter a valid date (DD/MM/YYYY)'
+                dateITA: 'Please enter a valid date (MM/DD/YYYY)'
             },
             timeReported: {
                 required: 'Please enter a time'
