@@ -20,7 +20,7 @@ block admin-content
                         var currDate = day + '/' + month + '/' + date.getFullYear();
                         var currTime = date.getHours() + ':' + date.getMinutes();
                     .col-sm-6
-                        +input_text( "dateReported", "Date Reported", "DD/MM/YYYY", true, currDate )
+                        +input_text( "dateReported", "Date Reported", "MM/DD/YYYY", true, currDate )
                     .col-sm-6
                         +input_text( "timeReported", "Time Reported", "HH:MM", true, currTime )
                 -
