@@ -827,7 +827,8 @@ exports.postCreateBolo = function (req, res, next) {
             //Create a date object using date and time reported
             const reportedDate = req.body.dateReported.split('/');
             const reportedTime = req.body.timeReported.split(':');
-            const newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
+            console.log(reportedDate[0] + " " + reportedDate[1] + "\n");
+            const newDate = new Date(reportedDate[2], reportedDate[0], reportedDate[1] - 1,
                 reportedTime[0], reportedTime[1], 0, 0);
             if (isNaN(newDate.getTime()))
                 errors.push('Please Enter a Valid Date');
@@ -1149,7 +1150,7 @@ exports.postEditBolo = function (req, res, next) {
                     //Create a date object using date and time reported
                     const reportedDate = req.body.dateReported.split('/');
                     const reportedTime = req.body.timeReported.split(':');
-                    const newDate = new Date(reportedDate[2], reportedDate[1] - 1, reportedDate[0],
+                    const newDate = new Date(reportedDate[2], reportedDate[0], reportedDate[1] - 1,
                          reportedTime[0], reportedTime[1], 0, 0);
                     if (isNaN(newDate.getTime())) {
                          errors.push('Please Enter a Valid Date');
