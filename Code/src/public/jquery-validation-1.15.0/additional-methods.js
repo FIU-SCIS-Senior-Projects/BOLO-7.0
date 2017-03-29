@@ -422,12 +422,12 @@ $.validator.addMethod( "dateFA", function( value, element ) {
 }, $.validator.messages.date );
 
 /**
- * Return true, if the value is a valid date, also making this formal check dd/mm/yyyy.
+ * Return true, if the value is a valid date, also making this formal check mm/dd/yyyy.
  *
  * @example $.validator.methods.date("01/01/1900")
  * @result true
  *
- * @example $.validator.methods.date("01/13/1990")
+ * @example $.validator.methods.date("13/01/1990")
  * @result false
  *
  * @example $.validator.methods.date("01.01.1900")
@@ -446,8 +446,8 @@ $.validator.addMethod( "dateITA", function( value, element ) {
 		adata, gg, mm, aaaa, xdata;
 	if ( re.test( value ) ) {
 		adata = value.split( "/" );
-		gg = parseInt( adata[ 0 ], 10 );
-		mm = parseInt( adata[ 1 ], 10 );
+		mm = parseInt( adata[ 0 ], 10 );
+		gg = parseInt( adata[ 1 ], 10 );
 		aaaa = parseInt( adata[ 2 ], 10 );
 		xdata = new Date( Date.UTC( aaaa, mm - 1, gg, 12, 0, 0, 0 ) );
 		if ( ( xdata.getUTCFullYear() === aaaa ) && ( xdata.getUTCMonth() === mm - 1 ) && ( xdata.getUTCDate() === gg ) ) {
@@ -462,7 +462,7 @@ $.validator.addMethod( "dateITA", function( value, element ) {
 }, $.validator.messages.date );
 
 $.validator.addMethod( "dateNL", function( value, element ) {
-	return this.optional( element ) || /^(0?[1-9]|[12]\d|3[01])[\.\/\-](0?[1-9]|1[012])[\.\/\-]([12]\d)?(\d\d)$/.test( value );
+	return this.optional( element ) || /^(0?[1-9]|1[012])[\.\/\-](0?[1-9]|[12]\d|3[01])[\.\/\-]([12]\d)?(\d\d)$/.test( value );
 }, $.validator.messages.date );
 
 // Older "accept" file extension method. Old docs: http://docs.jquery.com/Plugins/Validation/Methods/accept
