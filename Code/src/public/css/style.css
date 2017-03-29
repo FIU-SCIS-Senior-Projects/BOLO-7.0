@@ -259,7 +259,7 @@ a.thumbnail.active {
 
 #logo {
     float: right;
-/ / padding-left: 120 px;
+    padding-left: 120 px;
     margin-left: auto;
     margin-right: auto;
     height: 150px;
@@ -279,10 +279,9 @@ a.thumbnail.active {
 
 #badge {
     float: left;
-/ / padding-right: 170 px;
+    padding-right: 170 px;
     margin-left: auto;
-    margin-right: auto;
-    height: 150px;
+    margin-right: auto
 }
 
 #updatedstatus {
