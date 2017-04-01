@@ -35,6 +35,9 @@ block content
                             dd #{bolo.lastUpdated}
 
     form( name='editBoloForm' action="/bolo/edit/" + bolo.id enctype="multipart/form-data" method="post" )
+        .form-group
+            input(name="internal" type="checkbox" checked=prevForm.internal) 
+            label.checkbox-inline(for="internal") Internal
         div#category
             -
                 var statuses = [ 'ACTIVE', 'FOUND', 'ARRESTED', 'RESOLVED']
@@ -42,10 +45,11 @@ block content
 
 
         .form-group
-            .col-xs-12.col-md-6
-                +input_text( "dateReported", "Date Reported (DD/MM/YYYY)", "", false, prevForm.dateReported )
-            .col-xs-12.col-md-6
-                +input_text( "timeReported", "Time Reported (HH:MM)", "", false, prevForm.timeReported )
+            .row
+                .col-xs-12.col-md-6
+                    +input_text( "dateReported", "Date Reported (DD/MM/YYYY)", "", false, prevForm.dateReported )
+                .col-xs-12.col-md-6
+                    +input_text( "timeReported", "Time Reported (HH:MM)", "", false, prevForm.timeReported )
 
             +input_text_static( "category", "Category", "", true, bolo.category.name)
             div#categoryForms
