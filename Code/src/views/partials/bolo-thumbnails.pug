@@ -23,7 +23,10 @@ for bolo in bolos
 
             div.category
                 h4.strong(style = "text-align: center;") #{bolo.category.name}
-
+                if bolo.internal
+                    p(style = "text-align: center; color: #008cba") (Internal)
+                else
+                    p(style = "text-align: center;") &nbsp
             div.caption
                 p <b>Last Updated:</b> #{bolo.lastUpdated.toLocaleString()}
                 p <b>Reported On:</b> #{bolo.reportedOn}

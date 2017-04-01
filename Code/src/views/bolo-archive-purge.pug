@@ -12,13 +12,13 @@ block content
             .page-header
                 h2 WARNING. THIS CAN NOT BE UNDONE
                 p.text-danger
-                    | This will delete the archived bolos from the selected date
+                    | #{msg}!
 
-        #bolo-list.row.text-center
-            .row.text-center
-                nav(aria-label="Page navigation")
-                    ul#bolo-paging.pagination
-        form(action= '/bolo/archive/purge'  method="post" )
-            +input_text('password', 'Enter Your Password and Click DELETE to remove archived bolos', 'Enter Password', false, '', 'password')
-            button.btn.btn-danger( type="submit" value="save" ) DELETE
-        script(src="/js/renderPage.js" )
+            if (bolos && (0 === bolos.length))
+                p.lead No bolos were found matching the specified criteria.
+            else
+                #bolo-list.row.text-center
+                    include partials/bolo-thumbnails
+                form(action= '/bolo/archive/purge/' + id  method="post" )
+                    +input_text('password', 'Enter Your Password and Click DELETE to remove archived bolos', 'Enter Password', false, '', 'password')
+                    button.btn.btn-danger( type="submit" value="save" ) DELETE

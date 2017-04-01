@@ -15,6 +15,8 @@ var emailService = require('../services/email-service');
 var PDFDocument = require('pdfkit');
 var pug = require('pug');
 
+var converter = require('number-to-words');
+
 /**
  * Error handling for MongoDB
  */
@@ -382,7 +384,7 @@ function sendBoloUpdateConfirmationEmail(email, firstname, lastname, token) {
  * List active bolos based on query
  */
 exports.listBolos = function (req, res, next) {
-    console.log("entre a active bolossss")
+    console.log("READING"); 
     console.log(req.query);
     const limit = config.const.BOLOS_PER_QUERY;
     const filter = req.query.filter || 'allBolos';
@@ -390,43 +392,48 @@ exports.listBolos = function (req, res, next) {
     const agency = req.query.agency || '';
     switch (filter) {
         case 'allBolos':
-            console.log('Hitting render actives endpoint.');   
-            Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
+            Bolo.findAllBolos(req, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) console.log(err);
                 else {
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
                 }
             });
             break;
         case 'myAgency':
-            console.log('Hitting render actives endpoint.');
-            Bolo.findBolosByAgencyID(req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
+            Bolo.findBolosByAgencyID(req, req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) console.log(err);
                 else {
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
                 }
             });
             break;
+        case 'internal':
+            Bolo.findBolosByInternal(req, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) console.log(err);
+                else {
+                    res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
+                }
+            });
+        break;
         case 'myBolos':
-            console.log('Hitting render actives endpoint.');
             Bolo.findBolosByAuthor(req.user.id, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
+                if (err) console.log(err);
                 else {
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
                 }
             });
             break;
         case 'selectedAgency':
-            Bolo.findBolosByAgencyID(agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
+            Bolo.findBolosByAgencyID(req, agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) console.log(err);
                 else {
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
                 }
             });
             break;
         default:
-            Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                if (err) next(err);
+            Bolo.findAllBolos(req, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
+                if (err) console.log(err);
                 else {
                     console.log('Error! default case was called');
                     res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
@@ -441,7 +448,7 @@ exports.listBolos = function (req, res, next) {
  */
 exports.renderBoloPage = function (req, res, next) {
     Agency.findAllAgencies(function (err, listOfAgencies) {
-        if (err) next(err);
+        if (err) console.log(err);
         else {
             res.render('bolo', {agencies: listOfAgencies});
         }
@@ -456,7 +463,7 @@ exports.getBoloDetails = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
             if (err) {
-                next(err);
+                console.log(err);
             } else {
                 if (!bolo) {
                     req.flash('error_msg', 'Bolo ' + req.params.id + ' could not be found');
@@ -464,7 +471,7 @@ exports.getBoloDetails = function (req, res, next) {
                 } else {
                     Bolo.findIfEmailIsInBolo(req.params.id, req.user.email, function (err, boloFound) {
                         if (err) {
-                            next(err);
+                            console.log(err);
                         } else {
                             console.log(boloFound);
                             res.render('bolo-details', {bolo: bolo, isSubscribed: boloFound});
@@ -481,7 +488,7 @@ exports.getBoloDetails = function (req, res, next) {
 exports.subscribeToBOLO = function (req, res, next) {
     Bolo.subscribeToBOLO(req.params.id, req.user.email, function (err) {
         if (err) {
-            next(err);
+            console.log(err);
         } else {
             req.flash('success_msg', 'You are now Subscribed');
             res.redirect('/bolo/' + req.params.id);
@@ -492,7 +499,7 @@ exports.subscribeToBOLO = function (req, res, next) {
 exports.unsubscribeFromBOLO = function (req, res, next) {
     Bolo.unsubscribeFromBOLO(req.params.id, req.user.email, function (err) {
         if (err) {
-            next(err);
+            console.log(err);
         } else {
             req.flash('error_msg', 'You are now UnSubscribed');
             res.redirect('/bolo/' + req.params.id);
@@ -506,7 +513,7 @@ exports.unsubscribeFromBOLO = function (req, res, next) {
 exports.renderBoloAsPDF = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
-            if (err) next(err);
+            if (err) console.log(err);
             else if (!bolo) {
                 req.flash('error_msg', 'Bolo ' + req.params.id + ' could not be found');
                 res.redirect('/bolo');
@@ -801,6 +808,7 @@ exports.getCreateBolo = function (req, res) {
  * Creates a BOLO
  */
 exports.postCreateBolo = function (req, res, next) {
+   
     Category.findAllCategories(function (err, listOfCategories) {
         if (err) {
             req.flash('error_msg', 'Could not find categories');
@@ -813,7 +821,8 @@ exports.postCreateBolo = function (req, res, next) {
                 vid1: req.body.videoURL,
                 info1: req.body.info,
                 summary1: req.body.summary,
-                categories: listOfCategories
+                categories: listOfCategories,
+                internal1: (req.body.internal) ? true : false
             };
 
             //Validation of form
@@ -832,6 +841,13 @@ exports.postCreateBolo = function (req, res, next) {
                 reportedTime[0], reportedTime[1], 0, 0);
             if (isNaN(newDate.getTime()))
                 errors.push('Please Enter a Valid Date');
+
+            Category.findCategoryByName(req.body.category, function (err, category) {
+                if (err) console.log(err);
+                                
+                if (category == null)  
+                    errors.push('Please select a category');
+                                        
             // If there are errors
             if (errors.length) {
                 console.log("Validation errors:" + errors);
@@ -842,13 +858,11 @@ exports.postCreateBolo = function (req, res, next) {
             }
             //If no errors were found
             else {
-                Category.findCategoryByName(req.body.category, function (err, category) {
-                    if (err) next(err);
-                    else {
                         const token = crypto.randomBytes(20).toString('hex');
                         var newBolo = new Bolo({
                             author: req.user.id,
                             agency: req.user.agency.id,
+                            internal: (req.body.internal) ? true : false,
                             reportedOn: newDate,
                             category: category.id,
                             videoURL: req.body.videoURL,
@@ -941,6 +955,7 @@ exports.postCreateBolo = function (req, res, next) {
                                     prevForm.errors = getErrorMessage(err);
                                     res.render('bolo-create', prevForm);
                                 } else {
+                                    console.log(newBolo);
                                     console.log('Sending email using Sendgrid');
                                     sendBoloConfirmationEmail(req.user.email, req.user.firstname, req.user.lastname, token);
                                     req.flash('success_msg', 'BOLO successfully created, Please check your email in order to confirm it.');
@@ -951,7 +966,6 @@ exports.postCreateBolo = function (req, res, next) {
                     }
                 })
             }
-        }
     })
 };
 
@@ -961,7 +975,7 @@ exports.postCreateBolo = function (req, res, next) {
 exports.loggedOutConfirmBolo = function (req, res, next) {
     if (!req.user) {
         Bolo.findBoloByToken(req.params.token, function (err, boloToConfirm) {
-            if (err) next(err);
+            if (err) console.log(err);
             else {
                 if (!boloToConfirm) {
                     req.flash('error_msg', 'Bolo to confirm was not found on the database');
@@ -972,12 +986,12 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                 } else if (boloToConfirm.boloToDelete != 'N/A') { 
                     //Find original BOLO
                     Bolo.findBoloByID(boloToConfirm.boloToDelete, function (err, originalBolo) {
-                        if (err) next(err);
+                        if (err) console.log(err);
                         else {
                             if (!originalBolo) {
                                 //Delete new BOLO if original cannot be found
                                 Bolo.deleteBolo(boloToConfirm.id, function (err) {
-                                    if (err) next(err);
+                                    if (err) console.log(err);
                                     else {
                                         req.flash('error_msg', 'Bolo to confirm was not found on the database');
                                         res.redirect('/bolo');
@@ -986,14 +1000,12 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                             } else  {
                                 //Delete original BOLO
                                 Bolo.deleteBolo(boloToConfirm.boloToDelete, function (err) {
-                                    if (err) next(err);
+                                    if (err) console.log(err);
                                     else {
                                         boloToConfirm.boloToDelete = 'N/A';
-                                    }
-                                });
                                 boloToConfirm.isConfirmed = true;
                                 boloToConfirm.save(function (err) {
-                                    if (err) next(err);
+                                            if (err) console.log(err);
                                     else {
                                         sendBoloNotificationEmail(boloToConfirm,'update-bolo-notification');
                                         req.flash('success_msg', 'Bolo has been confirmed');
@@ -1001,12 +1013,14 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
                                     }
                                 });
                             }
+                                });
+                        }
                         }
                     });
                 } else {
                     boloToConfirm.isConfirmed = true;
                     boloToConfirm.save(function (err) {
-                        if (err) next(err);
+                        if (err) console.log(err);
                         else {
                             sendBoloNotificationEmail(boloToConfirm,'new-bolo-notification');
                             req.flash('success_msg', 'Bolo has been confirmed'); 
@@ -1026,7 +1040,7 @@ exports.loggedOutConfirmBolo = function (req, res, next) {
  */
 exports.confirmBolo = function (req, res, next) {
     Bolo.findBoloByToken(req.params.token, function (err, boloToConfirm) {
-        if (err) next(err);
+        if (err) console.log(err);
         else {
             if (!boloToConfirm) {
                 req.flash('error_msg', 'Bolo to confirm was not found on the database');
@@ -1037,12 +1051,12 @@ exports.confirmBolo = function (req, res, next) {
             } else if (boloToConfirm.boloToDelete != 'N/A') { 
                 //Find original BOLO
                 Bolo.findBoloByID(boloToConfirm.boloToDelete, function (err, originalBolo) {
-                    if (err) next(err);
+                    if (err) console.log(err);
                     else {
                         if (!originalBolo) {
                             //Delete new BOLO if original cannot be found
                             Bolo.deleteBolo(boloToConfirm.id, function (err) {
-                                if (err) next(err);
+                                if (err) console.log(err);
                                 else {
                                     req.flash('error_msg', 'Bolo to confirm was not found on the database');
                                     res.redirect('/bolo');
@@ -1051,14 +1065,12 @@ exports.confirmBolo = function (req, res, next) {
                         } else  {
                             //Delete original BOLO
                             Bolo.deleteBolo(boloToConfirm.boloToDelete, function (err) {
-                                if (err) next(err);
+                                if (err) console.log(err);
                                 else {
                                     boloToConfirm.boloToDelete = 'N/A';
-                                }
-                            });
                             boloToConfirm.isConfirmed = true;
                             boloToConfirm.save(function (err) {
-                                if (err) next(err);
+                                        if (err) console.log(err);
                                 else {
                                     sendBoloNotificationEmail(boloToConfirm,'update-bolo-notification');
                                     req.flash('success_msg', 'Bolo has been confirmed');                            
@@ -1066,12 +1078,14 @@ exports.confirmBolo = function (req, res, next) {
                                 }
                             });
                         }
+                            });
+                    }
                     }
                 });
             } else {
                 boloToConfirm.isConfirmed = true;
                 boloToConfirm.save(function (err) {
-                    if (err) next(err);
+                    if (err) console.log(err);
                     else {
                         sendBoloNotificationEmail(boloToConfirm,'new-bolo-notification');
                         req.flash('success_msg', 'Bolo has been confirmed');
@@ -1091,7 +1105,7 @@ exports.confirmBolo = function (req, res, next) {
 exports.getEditBolo = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
-            if (err) next(err);
+            if (err) console.log(err);
             else {
                 if (req.user.tier === 'ROOT' ||
                     ((req.user.tier === 'ADMINISTRATOR' || req.user.tier === 'SUPERVISOR') &&
@@ -1105,12 +1119,12 @@ exports.getEditBolo = function (req, res, next) {
                          var prevForm = {
                              dateReported: date,
                              timeReported: time,
+                             internal: bolo.internal,
                              vid: bolo.videoURL,
                              info: bolo.info,
                              summary: bolo.summary,
                              fields : bolo.fields
                          };
-                                                                                     
                          res.render('bolo-edit', {bolo: bolo, prevForm : prevForm});
                         
                 } else {
@@ -1130,7 +1144,7 @@ exports.getEditBolo = function (req, res, next) {
 exports.postEditBolo = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
-            if (err) next(err);
+            if (err) console.log(err);
             else {
                 if (req.user.tier === 'ROOT' ||
                     ((req.user.tier === 'ADMINISTRATOR' || req.user.tier === 'SUPERVISOR') &&
@@ -1163,6 +1177,7 @@ exports.postEditBolo = function (req, res, next) {
                         info: req.body.info,
                         summary: req.body.summary,
                         fields : req.body.field,
+                        internal: (req.body.internal) ? true : false,
                     };
                                                                                                                                     
                     // If there are errors
@@ -1183,6 +1198,7 @@ exports.postEditBolo = function (req, res, next) {
                         var newBolo = new Bolo({
                             author: bolo.author.id,
                             agency: bolo.agency.id,
+                            internal: (req.body.internal) ? true : false,
                             category : bolo.category.id,
                             createdOn : bolo.createdOn,
                             conformationToken: token, 
@@ -1263,63 +1279,44 @@ exports.postEditBolo = function (req, res, next) {
     }
 };
 
+function dateDiffInYears(a, b) {
+    var _MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365;
+
+    // Discard the time and time-zone information.
+    var utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    var utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+    return Math.floor((utc2 - utc1) / _MS_PER_YEAR);
+}
+
 /**
  * List archived bolos
  */
 exports.renderArchivedBolos = function (req, res, next) {
-    console.log(req.query);
-    const limit = config.const.BOLOS_PER_QUERY;
-    const filterArchived = req.query.filterArchived || 'allBolos';
-    const isArchived = req.query.archived || false;
-    const agency = req.query.agency || '';
-    if (req.query.filterArchived){
-        switch (filterArchived) {
-            case 'allBolos':
-                console.log('Hitting render archives endpoint.');
-                Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                    if (err) next(err);
-                    else {
-                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                    }
-                });
-                break;
-            case 'myAgency':
-                console.log('Hitting render archives endpoint.');
-                Bolo.findBolosByAgencyID(req.user.agency, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                    if (err) next(err);
-                    else {
-                        console.log(listOfBolos);
-                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                    }
-                });
-                break;
-            case 'myBolos':
-                console.log('Hitting render archives endpoint.');
-                Bolo.findBolosByAuthor(req.user.id, true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                    if (err) next(err);
-                    else {
-                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                    }
-                });
-                break;
-            default:
-            Bolo.findAllBolos(true, isArchived, limit, 'createdOn', function (err, listOfBolos) {
-                    if (err) next(err);
-                    else {
-                        console.log('Error! default case was called');
-                        res.render('partials/bolo-thumbnails', {bolos: listOfBolos});
-                    }
-                });
-                break;
-        
-        }
+    Bolo.findOldestArchivedBolos(req, 1, 'reportedOn', function (err, bolo) {
+        if (err) console.log(err);
+        else if (bolo.length) {
+            var today = new Date(); 
+            var d = new Date(bolo[0].reportedOn); 
+            var oldestYear = dateDiffInYears(d, today);   
+            var labels = []; 
+            labels.push({ name : "All Archived Bolos", 
+                id : 'default'
+            });
+            var i; 
+            for (i = 1; i <= oldestYear; i++) {
+                labels.push({ name : converter.toWords(i).charAt(0).toUpperCase() + converter.toWords(i).slice(1) + " Year", 
+                    id : i
+            });
+                }
+    
+            res.render('bolo-archive', {labels : labels});
     }
-    else{
-         res.render('bolo-archive');
-         console.log("render bolo archive");
-    }
-
+        else 
+    res.render('bolo-archive');
+    }); 
 };
+ 
 
 /**
  * Handle requests to inactivate a specific bolo
@@ -1327,12 +1324,12 @@ exports.renderArchivedBolos = function (req, res, next) {
 exports.archiveBolo = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
-            if (err) next(err);
+            if (err) console.log(err);
             else {
                 bolo.isArchived = true;
                 var shortID = bolo.id.substring(0, 8) + '...';
                 bolo.save(function (err) {
-                    if (err) next(err);
+                    if (err) console.log(err);
                     else {
                         req.flash('error_msg', 'Bolo ' + shortID + ' has been archived');
                         res.redirect('/bolo');
@@ -1351,12 +1348,12 @@ exports.archiveBolo = function (req, res, next) {
 exports.unArchiveBolo = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
-            if (err) next(err);
+            if (err) console.log(err);
             else {
                 bolo.isArchived = false;
                 var shortID = bolo.id.substring(0, 8) + '...';
                 bolo.save(function (err) {
-                    if (err) next(err);
+                    if (err) console.log(err);
                     else {
                         req.flash('success_msg', 'Bolo ' + shortID + ' has been restored');
                         res.redirect('/bolo/archive');
@@ -1376,13 +1373,13 @@ exports.deleteBolo = function (req, res, next) {
     if (req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
         var shortID = req.params.id.substring(0, 8) + '...';
         Bolo.findBoloByID(req.params.id, function (err, bolo) {
-            if (err) next(err);
+            if (err) console.log(err);
             else {
                 //Check if the current user is authorized to delete the bolo
                 if (req.user.tier === 'ROOT' ||
                     (req.user.tier === 'ADMINISTRATOR' && req.user.agency.id === bolo.agency.id)) {
                     Bolo.deleteBolo(req.params.id, function (err) {
-                        if (err) next(err);
+                        if (err) console.log(err);
                         else {
                             req.flash('success_msg', 'BOLO ' + shortID + ' has been deleted');
                             res.redirect('/bolo/archive');
@@ -1403,7 +1400,31 @@ exports.deleteBolo = function (req, res, next) {
  * Gets the bolo purge archive view
  */
 exports.renderPurgeArchivedBolosPage = function (req, res) {
-    res.render('bolo-archive-purge');
+   
+    if (req.body.range == 'default' || req.params.id == 'default') {
+        Bolo.findArchivedBolos (req, 'reportedOn', function (err, listOfBolos) { 
+            if (err) console.log(err);
+            else {
+                var warning_msg = 'This will delete all of the archived bolos'; 
+                res.render('bolo-archive-purge', {bolos: listOfBolos, id : 'default', msg : warning_msg});
+            }
+        }); 
+    } else {
+        var today = new Date();
+        var minusYear = (req.body.range) ? req.body.range : req.params.id;
+        var newDate = new Date((today.getFullYear() - parseInt(minusYear)), today.getMonth(), today.getDate());
+        console.log(newDate); 
+
+        Bolo.findBolosLessThan(req, newDate, 'reportedOn', function (err, listOfBolos) {
+            if (err) console.log(err);
+            else {
+                var warning_msg = 'This will delete the archived bolos older than ' 
+                    + converter.toWords(minusYear) + ' year' + ((minusYear > 1) ? 's' : ''); 
+               res.render('bolo-archive-purge', {bolos: listOfBolos, id : minusYear, msg: warning_msg});
+            }
+        }); 
+    }
+    
 };
 
 /**
@@ -1414,21 +1435,40 @@ exports.purgeArchivedBolos = function (req, res, next) {
     if (req.user.tier === 'ROOT') {
         User.comparePassword(req.body.password, req.user.password, function (err, result) {
             if (err) {
-                next(err);
+                console.log(err);
             }
             else {
+                console.log("Result: " + result);
                 if (result) {
-                    Bolo.deleteAllArchivedBolos(function (err, result) {
-                        if (err) next(err);
+                    if (req.params.id == 'default') {
+                        Bolo.deleteAllArchivedBolos(req, function (err, result) {
+                            if (err) console.log(err);
                         else {
                             console.log(result);
                             req.flash('success_msg', 'All archived BOLOs have been deleted. Removed ' + result.result.n + ' BOLOs');
                             res.redirect('/bolo/archive');
                         }
                     });
+                    } else {
+
+                        var today = new Date();
+                        var minusYear = req.params.id;
+                        var newDate = new Date((today.getFullYear() - parseInt(minusYear)), today.getMonth(), today.getDate());
+                        console.log(newDate); 
+
+                        Bolo.deleteBolosLessThan(req, newDate, function (err, result) {
+                            if (err) console.log(err);
+                            else {
+                                console.log(result);
+                                req.flash('success_msg', 'All BOLOs older than ' + converter.toWords(minusYear) + ' year' + ((minusYear > 1) ? 's have' : ' has') + ' been deleted. Removed ' + result.result.n + ' BOLOs');
+                                res.redirect('/bolo/archive');
+                            }
+                        });
+                    }
+                            
                 } else {
                     req.flash('error_msg', 'Password was not correct');
-                    res.redirect('/bolo/archive/purge');
+                    res.redirect('/bolo/archive/purge/' + req.params.id);
                 }
             }
         })
@@ -1443,7 +1483,7 @@ exports.purgeArchivedBolos = function (req, res, next) {
  */
 exports.getBoloSearch = function (req, res, next) {
     Agency.findAllAgencies(function (err, listOfAgencies) {
-        if (err) next(err);
+        if (err) console.log(err);
         else {
             var listOfAgencyNames = [];
             listOfAgencyNames.push('N/A');
@@ -1452,7 +1492,7 @@ exports.getBoloSearch = function (req, res, next) {
                 console.log(listOfAgencies[i].name + "  ");
             }
             Category.findAllCategories(function (err, listOfCategories) {
-                if (err) next(err);
+                if (err) console.log(err);
                 else {
                     res.render('bolo-search', {agencies: listOfAgencyNames, categories: listOfCategories});
                 }
@@ -1466,21 +1506,21 @@ exports.getBoloSearch = function (req, res, next) {
  */
 exports.postBoloSearch = function (req, res, next) {
     Agency.findAgencyByName(req.body.agencyName, function (err, agency) {
-        if (err) next(err);
+        if (err) console.log(err);
         else {
             Category.findCategoryByName(req.body.categoryName, function (err, category) {
-                if (err) next(err);
+                if (err) console.log(err);
                 else {
                     if (!agency) {
-                        Bolo.searchAllBolosByCategory(category !== null ? category._id: null, req.body.field, function (err, listOfBolos) {
-                            if (err) next(err);
+                        Bolo.searchAllBolosByCategory(req, category !== null ? category._id: null, req.body.field, function (err, listOfBolos) {
+                            if (err) console.log(err);
                             else{
                                 res.render('bolo-search-results', {bolos: listOfBolos});
                             }         
                         });
                     } else {             
-                        Bolo.searchAllBolosByAgencyAndCategory(agency._id, category !== null ? category._id: null, req.body.field, function (err, listOfBolos) {
-                            if (err) next(err);
+                        Bolo.searchAllBolosByAgencyAndCategory(req, agency._id, category !== null ? category._id: null, req.body.field, function (err, listOfBolos) {
+                            if (err) console.log(err);
                             else
                                 res.render('bolo-search-results', {bolos: listOfBolos});
                         });

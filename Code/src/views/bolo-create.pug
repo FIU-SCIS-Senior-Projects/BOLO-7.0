@@ -18,10 +18,10 @@ block content
         noscript
             h2.text-danger Javascript is disabled in your browser! You can not create a bolo without javascript enabled!
 
-        //h4 The current Date and Time is #{Date()}
-
         form#create-bolo-form(name='createBoloForm' action= "/bolo/create" enctype="multipart/form-data" method="post")
-
+            .form-group
+                input(name="internal" type="checkbox" checked=internal1) 
+                label.checkbox-inline(for="internal") Internal
             .row
                 .col-sm-6
                     +input_text( "dateReported", "Date Reported", "MM/DD/YYYY", false, dateReported1 )

@@ -11,6 +11,11 @@ var Schema = new mongoose.Schema({
         ref: 'agency',
         required: true
     },
+    internal: {
+        type: Boolean, 
+        default: false,
+        required: true
+    },
     reportedOn: {
         type: Date,
         required: true
@@ -86,10 +91,32 @@ module.exports.findBoloByID = function (id, callback) {
     Bolo.findOne({_id: id}).populate('agency').populate('author').populate('category').exec(callback);
 };
 
-module.exports.findAllBolos = function (isConfirmed, isArchived, limit, sortBy, callback) {
-    Bolo.find({isConfirmed: isConfirmed, isArchived: isArchived})
+module.exports.findAllBolos = function (req, isConfirmed, isArchived, limit, sortBy, callback) {
+    Bolo.find({ isConfirmed: isConfirmed, isArchived: isArchived, $or: [ {internal: false}, {internal: null}, {$and: [{internal: true}, {agency: req.user.agency.id}]} ] })
         .populate('agency').populate('author').populate('category')
         .limit(limit)
+        .sort([[sortBy, -1]])
+        .exec(callback);
+};
+
+module.exports.findOldestArchivedBolos = function (req, limit, sortBy, callback) {
+    Bolo.find({ isConfirmed: true, isArchived: true, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+        .populate('agency').populate('author').populate('category')
+        .limit(limit)
+        .sort([[sortBy, 1]])
+        .exec(callback);
+};
+
+module.exports.findBolosLessThan = function (req, lessThanDate, sortBy, callback) {
+    Bolo.find({ isConfirmed: true, isArchived: true, 'reportedOn': { $lte : lessThanDate }, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+        .populate('agency').populate('author').populate('category')
+        .sort([[sortBy, -1]])
+        .exec(callback);
+};
+
+module.exports.findArchivedBolos = function (req, sortBy, callback) {
+    Bolo.find({ isConfirmed: true, isArchived: true, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+        .populate('agency').populate('author').populate('category')
         .sort([[sortBy, -1]])
         .exec(callback);
 };
@@ -101,21 +128,29 @@ module.exports.findBolosByAuthor = function (authorID, isConfirmed, isArchived, 
         .sort([[sortBy, -1]])
         .exec(callback);
 };
-module.exports.findBolosByAgencyID = function (agencyID, isConfirmed, isArchived, limit, sortBy, callback) {
-    Bolo.find({agency: agencyID, isConfirmed: isConfirmed, isArchived: isArchived})
+module.exports.findBolosByAgencyID = function (req, agencyID, isConfirmed, isArchived, limit, sortBy, callback) {
+    Bolo.find({ agency: agencyID, isConfirmed: isConfirmed, isArchived: isArchived, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
         .populate('agency').populate('author').populate('category')
         .limit(limit)
         .sort([[sortBy, -1]])
         .exec(callback);
 };
 
-module.exports.findAllBolosByAgencyID = function (agencyID, callback){
-    Bolo.find({agency: agencyID, isConfirmed: true})
+module.exports.findBolosByInternal = function (req, isConfirmed, isArchived, limit, sortBy, callback) {
+    Bolo.find({ isConfirmed: isConfirmed, isArchived: isArchived, $and: [{ internal: true }, { agency: req.user.agency.id }] })
+        .populate('agency').populate('author').populate('category')
+        .limit(limit)
+        .sort([[sortBy, -1]])
         .exec(callback);
 };
 
-module.exports.findBoloByCategoryID = function (id, callback){
-    Bolo.findOne({category: id})
+module.exports.findAllBolosByAgencyID = function (req, agencyID, callback){
+    Bolo.find({ agency: agencyID, isConfirmed: true, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+        .exec(callback);
+};
+
+module.exports.findBoloByCategoryID = function (req, id, callback){
+    Bolo.findOne({ category: id, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
         .exec(callback);
 };
 
@@ -138,8 +173,8 @@ module.exports.unsubscribeFromBOLO = function (boloId, email, callback) {
 };
 
 
-module.exports.findBolosByAgencyIDs = function (agencyIDs, isConfirmed, isArchived, limit, sortBy, callback) {
-    Bolo.find({agency: {$in: agencyIDs}, isConfirmed: isConfirmed, isArchived: isArchived})
+module.exports.findBolosByAgencyIDs = function (req, agencyIDs, isConfirmed, isArchived, limit, sortBy, callback) {
+    Bolo.find({ agency: { $in: agencyIDs }, isConfirmed: isConfirmed, isArchived: isArchived, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
         .populate('agency').populate('author').populate('category')
         .limit(limit)
         .sort([[sortBy, -1]])
@@ -154,7 +189,7 @@ module.exports.addDataSubscriberEmailToBolo = function (boloID, emailToAdd, call
     Bolo.findByIdAndUpdate(boloID, {$push: {subscribers: emailToAdd}}, {safe: true, upsert: true}, callback);
 };
 
-module.exports.searchAllBolosByAgencyAndCategory = function (agencyID, categoryID, fieldsArray, callback) {
+module.exports.searchAllBolosByAgencyAndCategory = function (req, agencyID, categoryID, fieldsArray, callback) {
     console.log('Searching for AgencyID: ' + agencyID + ', categoryID: ' + categoryID + ', fieldsArray: ' + fieldsArray);
     if (!Array.isArray(fieldsArray))
         fieldsArray = [fieldsArray];
@@ -166,14 +201,23 @@ module.exports.searchAllBolosByAgencyAndCategory = function (agencyID, categoryI
     }    
 
     if(!categoryID)
-        Bolo.find({agency: agencyID, isConfirmed: true}).exec(callback);  
+        Bolo.find({ agency: agencyID, isConfirmed: true, isArchived: false, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+            .populate('agency').populate('author').populate('category')
+            .sort([['createdOn', -1]])
+            .exec(callback);
     else if(!isFieldsArrayEmpty)
-        Bolo.find({agency: agencyID, category: categoryID, isConfirmed: true}).exec(callback);     
+        Bolo.find({ agency: agencyID, category: categoryID, isConfirmed: true, isArchived: false, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+            .populate('agency').populate('author').populate('category')
+            .sort([['createdOn', -1]])
+            .exec(callback);
     else
-        Bolo.find({agency: agencyID, category: categoryID, fields: {$in: fieldsArray}, isConfirmed: true}).exec(callback);
+        Bolo.find({ agency: agencyID, category: categoryID, fields: { $in: fieldsArray }, isConfirmed: true, isArchived: false, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+            .populate('agency').populate('author').populate('category')
+            .sort([['createdOn', -1]])
+            .exec(callback);
 };
 
-module.exports.searchAllBolosByCategory = function (categoryID, fieldsArray, callback) {
+module.exports.searchAllBolosByCategory = function (req, categoryID, fieldsArray, callback) {
     console.log('Searching for categoryID: ' + categoryID + ', fieldsArray: ' + fieldsArray);
     if (!Array.isArray(fieldsArray))
         fieldsArray = [fieldsArray];   
@@ -185,11 +229,20 @@ module.exports.searchAllBolosByCategory = function (categoryID, fieldsArray, cal
     }
 
     if(!categoryID)
-        Bolo.find({isConfirmed: true}).exec(callback); 
+        Bolo.find({ isConfirmed: true, isArchived: false, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+            .populate('agency').populate('author').populate('category')
+            .sort([['createdOn', -1]])
+            .exec(callback);
     else if (!isFieldsArrayEmpty)
-        Bolo.find({category: categoryID, isConfirmed: true}).exec(callback);
+        Bolo.find({ category: categoryID, isConfirmed: true, isArchived: false, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+            .populate('agency').populate('author').populate('category')
+            .sort([['createdOn', -1]])
+            .exec(callback);
     else
-        Bolo.find({category: categoryID, fields: {$in: fieldsArray}, isConfirmed: true}).exec(callback);
+        Bolo.find({ category: categoryID, fields: { $in: fieldsArray }, isConfirmed: true, isArchived: false, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+            .populate('agency').populate('author').populate('category')
+            .sort([['createdOn', -1]])
+            .exec(callback);
 };
 
 module.exports.deleteBolo = function (id, callback) {
@@ -200,6 +253,12 @@ module.exports.removeAuthorFromBolos = function (authorID, nullID, callback) {
     Bolo.update({author: authorID}, {author: nullID}, {multi: true}, callback);
 };
 
-module.exports.deleteAllArchivedBolos = function (callback) {
-    Bolo.remove({isArchived: true}).exec(callback);
+module.exports.deleteAllArchivedBolos = function (req, callback) {
+    Bolo.remove({ isArchived: true, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+        .exec(callback);
+};
+
+module.exports.deleteBolosLessThan = function (req, lessThanDate, callback) {
+    Bolo.remove({ isArchived: true, 'reportedOn': { $lte: lessThanDate }, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+        .exec(callback);
 };
