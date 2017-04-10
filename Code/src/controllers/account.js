@@ -57,7 +57,7 @@ exports.postUnsubscribeNotifications = function ( req, res, next ) {
                 var allBolos = [];
                 var i = 0;
                 req.body.agencies.forEach(function(entry){
-                    Bolo.findAllBolosByAgencyID(entry, function(err, buf){
+                    Bolo.findAllBolosByAgencyID(req, entry, function(err, buf){
                         console.log(i);                    
                         if(err)
                             next(err);
@@ -109,7 +109,7 @@ exports.postSubscribeNotifications = function ( req, res, next ) {
                         var allBolos = [];
                         var i = 0;
                         req.body.agencies.forEach(function(entry){
-                            Bolo.findAllBolosByAgencyID(entry, function(err, buf){
+                            Bolo.findAllBolosByAgencyID(req, entry, function(err, buf){
                                 console.log(i);
                                 
                                 if(err)

@@ -26,7 +26,7 @@ module.exports.downloadCsv = function (req, res, next) {
     const limit = 2000000;
     const isArchived = false;
 
-    BOLO.findBolosByAgencyIDs(agenciesToFilterBy, true, isArchived, limit, 'createdOn', function (err, listOfBOLOS) {
+    BOLO.findBolosByAgencyIDs(req, agenciesToFilterBy, true, isArchived, limit, 'createdOn', function (err, listOfBOLOS) {
         if (err) next(err);
         var formattedListOfBOLOS = [];
         for (var i = 0; i < listOfBOLOS.length; i++) {
