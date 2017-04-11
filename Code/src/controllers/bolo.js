@@ -1113,7 +1113,7 @@ exports.getEditBolo = function (req, res, next) {
                     (req.user.id === bolo.author.id)) {
                          var d = new Date(bolo.reportedOn); 
                      
-                         var date = [d.getDate(), d.getMonth() + 1, d.getFullYear()].join('/');
+                         var date = [d.getMonth() + 1, d.getDate(), d.getFullYear()].join('/');
                          var time = [d.getHours(), (d.getMinutes() < 10) ? d.getMinutes() + "0" : d.getMinutes()].join(':'); 
 
                          var prevForm = {
@@ -1305,7 +1305,7 @@ exports.renderArchivedBolos = function (req, res, next) {
             });
             var i; 
             for (i = 1; i <= oldestYear; i++) {
-                labels.push({ name : converter.toWords(i).charAt(0).toUpperCase() + converter.toWords(i).slice(1) + " Year", 
+                labels.push({ name : converter.toWords(i).charAt(0).toUpperCase() + converter.toWords(i).slice(1) + " Year" + ((i > 1) ? 's' : ''), 
                     id : i
             });
                 }
