@@ -149,8 +149,9 @@ module.exports.findAllBolosByAgencyID = function (req, agencyID, callback){
         .exec(callback);
 };
 
-module.exports.findBoloByCategoryID = function (req, id, callback){
-    Bolo.findOne({ category: id, $or: [{ internal: false }, { internal: null }, { $and: [{ internal: true }, { agency: req.user.agency.id }] }] })
+module.exports.findBoloByCategoryID = function (id, callback){
+    Bolo.findOne({category: id})
+        .exec(callback);
 };
 
 module.exports.findIfEmailIsInBolo = function (boloID, email, callback) {

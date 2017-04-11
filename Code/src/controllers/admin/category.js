@@ -141,7 +141,7 @@ exports.postEditCategory = function (req, res, next) {
 };
 
 exports.removeCategory = function (req, res, next) {
-    Bolo.findBoloByCategoryID(req, req.params.id, function(err, boloFound){
+    Bolo.findBoloByCategoryID(req.params.id, function(err, boloFound){
         if(err) next(err);
         else{
             console.log("Bolo found \n" + boloFound );
