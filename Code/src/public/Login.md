@@ -1,4 +1,4 @@
 <img src="/img/chiefsofpolice.png" alt="BOLO Logo"style="height:220px;"/>
-#BOLO Application
+#BOLO Flier Creator
 ###Situational Awareness Multi-Jurisdictional Resource
-     
+               
