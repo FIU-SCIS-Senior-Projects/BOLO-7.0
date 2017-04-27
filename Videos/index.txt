@@ -1,8 +1,8 @@
-watch all:				https://www.youtube.com/watch?v=a18J1GdxY8E&list=PLG3lylzOg8Fis1AvtyYfrkFpmdhgJ4Pwi
-Introduction:           https://www.youtube.com/watch?v=a18J1GdxY8E
-Installation guide:		https://www.youtube.com/watch?v=egzVFHtt7VM
-Officer how to:			https://www.youtube.com/watch?v=AviMxOMtbkQ
-Supervisor how to:		https://www.youtube.com/watch?v=6PZ8jS8_KmM
-Admin how to:			https://www.youtube.com/watch?v=s4LVqBR3tBg
-Root how to:			https://www.youtube.com/watch?v=L_IDUDeQ5Bs
-Wish list Ideas:		https://www.youtube.com/watch?v=vLL1t_6ypbc
+watch all:				https://www.youtube.com/watch?v=d6X_JXkuuW0&list=PLG3lylzOg8Fhu89wnivlmNR74tt7AGC_f
+Introduction:           https://www.youtube.com/watch?v=d6X_JXkuuW0
+Installation guide:		https://www.youtube.com/watch?v=4NEW57gPmDA
+Officer how to:			https://www.youtube.com/watch?v=f4cPD-nKyGg
+Supervisor how to:		https://www.youtube.com/watch?v=6m73VHfGgRo
+Admin how to:			https://www.youtube.com/watch?v=5hL0E0D3rU4
+Root how to:			https://www.youtube.com/watch?v=B9REIuSPfgk
+Wish list Ideas:		https://www.youtube.com/watch?v=ixOGcZOj9t8
