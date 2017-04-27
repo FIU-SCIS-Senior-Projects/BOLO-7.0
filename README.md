@@ -1,4 +1,4 @@
-# BOLO-7.0
+# BOLOv7.0
 
 ## Version 7 Developers
 - Mario Siu (msiu001@fiu.edu)
@@ -20,8 +20,12 @@ The current application stack consists of:
 
 ## How to use
 
-This app is designed to be used in a Node.js environment. Version 6 of
+This app is designed to be used in a Node.js environment. Version 7 of
 the BOLO Flier Creator is designed to be used with a MongoDB server.
+
+## Installation guide
+
+Click [here](https://www.youtube.com/watch?v=4NEW57gPmDA&index=6&list=PLG3lylzOg8Fhu89wnivlmNR74tt7AGC_f) for a step-by-step video to set up BOLOv7.0
 
 ## Running the application
 
